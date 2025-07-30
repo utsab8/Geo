@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geospatial Data Report</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .report-header {
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .report-header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+        
+        .report-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            color: #667eea;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .report-subtitle {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: #666;
+            margin: 0;
+        }
+        
+        .report-meta {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        
+        .meta-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .meta-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .meta-number {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .meta-label {
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        .description {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .description h3 {
+            margin: 0 0 15px 0;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+        }
+        
+        .description p {
+            margin: 0;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        
+        .filters-section {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filters-title {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            font-weight: bold;
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        
+        .filters-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .filter-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .filter-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .filter-label {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .data-table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+            transition: background-color 0.2s ease;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .data-table tr:hover {
+            background: #e3f2fd;
+            transform: scale(1.01);
+        }
+        
+        .type-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            text-align: center;
+            min-width: 60px;
+        }
+        
+        .type-kml { 
+            background: linear-gradient(135deg, #28a745, #20c997); 
+            color: white; 
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+        .type-csv { 
+            background: linear-gradient(135deg, #dc3545, #fd7e14); 
+            color: white; 
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+        .type-shp { 
+            background: linear-gradient(135deg, #007bff, #6610f2); 
+            color: white; 
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        .report-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #666;
+            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-style: italic;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .no-data h3 {
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .no-data p {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .report-container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            .meta-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .filters-list {
+                grid-template-columns: 1fr;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
+            }
+
+            .type-badge {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .report-container {
+                padding: 10px;
+            }
+
+            .description {
+                padding: 20px 15px;
+            }
+
+            .filters-section {
+                padding: 15px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body { 
+                background: white; 
+                padding: 0;
+            }
+            .report-container { 
+                box-shadow: none; 
+                border-radius: 0;
+                max-width: none;
+            }
+            .meta-item:hover,
+            .filter-item:hover,
+            .data-table tr:hover {
+                transform: none;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animation */
+        .loading {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Accessibility improvements */
+        .data-table th:focus,
+        .data-table td:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .data-table th {
+                background: #000;
+                color: #fff;
+            }
+            .type-badge {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container loading">
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 class="report-title">🌍 Geospatial Data Report</h1>
+            <p class="report-subtitle">Comprehensive analysis of uploaded spatial data</p>
+        </div>
+        
+        <!-- Report Meta Information -->
+        <div class="report-meta">
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-number">{{ parcels|length }}</span>
+                    <div class="meta-label">Total Parcels</div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-number">{{ parcels|dictsort:"district"|length }}</span>
+                    <div class="meta-label">Districts</div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-number">{{ parcels|dictsort:"municipality"|length }}</span>
+                    <div class="meta-label">Municipalities</div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-number">{{ parcels|dictsort:"ward"|length }}</span>
+                    <div class="meta-label">Wards</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="description">
+            <h3>📊 Report Summary</h3>
+            <p>{{ description }}</p>
+        </div>
+        
+        <!-- Applied Filters -->
+        {% if filters %}
+        <div class="filters-section">
+            <h3 class="filters-title">🔍 Applied Filters</h3>
+            <div class="filters-list">
+                {% for key, value in filters.items %}
+                    {% if value %}
+                    <div class="filter-item">
+                        <span class="filter-label">{{ key|title }}:</span> {{ value }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Data Table -->
+        {% if parcels %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Kitta No</th>
+                        <th>SN No</th>
+                        <th>District</th>
+                        <th>Municipality</th>
+                        <th>Ward</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th>Uploaded</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parcel in parcels %}
+                    <tr>
+                        <td>{{ parcel.id|truncatechars:8 }}</td>
+                        <td>{{ parcel.name|default:"-" }}</td>
+                        <td>{{ parcel.kitta_no|default:"-" }}</td>
+                        <td>{{ parcel.sn_no|default:"-" }}</td>
+                        <td>{{ parcel.district|default:"-" }}</td>
+                        <td>{{ parcel.municipality|default:"-" }}</td>
+                        <td>{{ parcel.ward|default:"-" }}</td>
+                        <td>{{ parcel.location|default:"-" }}</td>
+                        <td><span class="type-badge type-{{ parcel.file_type|lower }}">{{ parcel.file_type }}</span></td>
+                        <td>{{ parcel.uploaded_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <h3>📭 No Data Found</h3>
+            <p>No parcels match the specified criteria.</p>
+        </div>
+        {% endif %}
+        
+        <!-- Report Footer -->
+        <div class="report-footer">
+            <p><strong>Generated on:</strong> {{ generated_at|date:"F d, Y at H:i" }}</p>
+            <p>This report was automatically generated by the Geospatial Dashboard system.</p>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth loading animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.report-container');
+            container.classList.remove('loading');
+            
+            // Add staggered animation to meta items
+            const metaItems = document.querySelectorAll('.meta-item');
+            metaItems.forEach((item, index) => {
+                item.style.animationDelay = `${index * 0.1}s`;
+                item.style.animation = 'slideIn 0.6s ease-out forwards';
+            });
+
+            // Add smooth scroll to top functionality
+            const scrollToTop = () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            };
+
+            // Add keyboard navigation for table
+            const table = document.querySelector('.data-table');
+            if (table) {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach((row, index) => {
+                    row.setAttribute('tabindex', '0');
+                    row.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            row.style.backgroundColor = '#e3f2fd';
+                            setTimeout(() => {
+                                row.style.backgroundColor = '';
+                            }, 200);
+                        }
+                    });
+                });
+            }
+
+            // Add responsive table handling
+            const tableContainer = document.querySelector('.table-container');
+            if (tableContainer) {
+                let isScrolling = false;
+                tableContainer.addEventListener('scroll', () => {
+                    if (!isScrolling) {
+                        isScrolling = true;
+                        tableContainer.style.cursor = 'grabbing';
+                    }
+                    clearTimeout(tableContainer.scrollTimeout);
+                    tableContainer.scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                        tableContainer.style.cursor = 'grab';
+                    }, 150);
+                });
+            }
+
+            // Add touch support for mobile
+            if ('ontouchstart' in window) {
+                document.body.classList.add('touch-device');
+            }
+        });
+
+        // Add print functionality
+        function printReport() {
+            window.print();
+        }
+
+        // Add download functionality (if needed)
+        function downloadReport() {
+            // Implementation for downloading report as PDF
+            console.log('Download functionality can be implemented here');
+        }
+    </script>
+</body>
+</html> 

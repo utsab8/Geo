@@ -1,0 +1,776 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}View Map - GeoSurvey{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<style>
+    /* Beautiful ViewMap Page Styles */
+    .viewmap-container {
+        padding: 40px 20px;
+        max-width: 1800px;
+        margin: 0 auto;
+        min-height: calc(100vh - 110px);
+    }
+
+    /* Page Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInUp 0.8s ease;
+    }
+
+    .page-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+        background-size: 300% 300%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientFlow 4s ease infinite;
+        margin-bottom: 15px;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .page-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        font-weight: 500;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    @keyframes gradientFlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Main Content Layout */
+    .main-content {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 30px;
+        animation: slideInUp 1s ease 0.2s both;
+    }
+
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Filter Sidebar */
+    .filter-sidebar {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        padding: 30px 25px;
+        border: 2px solid rgba(255,255,255,0.3);
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+        transition: all 0.3s ease;
+        animation: slideInLeft 0.8s ease 0.4s both;
+    }
+
+    .filter-sidebar:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+    }
+
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .filter-icon {
+        font-size: 1.5rem;
+        color: #667eea;
+        animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .filter-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #667eea;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        border: 2px solid rgba(102, 126, 234, 0.2);
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(10px);
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background: rgba(255,255,255,0.95);
+        transform: translateY(-2px);
+    }
+
+    .btn {
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #764ba2, #667eea);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-outline-secondary {
+        background: rgba(255,255,255,0.8);
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        color: #667eea;
+    }
+
+    .btn-outline-secondary:hover {
+        background: rgba(102, 126, 234, 0.1);
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    /* Map and Table Section */
+    .map-table-section {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        animation: slideInRight 0.8s ease 0.6s both;
+    }
+
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .export-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 20px 25px;
+        border: 2px solid rgba(255,255,255,0.3);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .status-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .status-badge {
+        background: linear-gradient(45deg, #43e97b, #38f9d7);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+    }
+
+    .export-btn {
+        background: linear-gradient(45deg, #f093fb, #f5576c);
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .export-btn:hover {
+        background: linear-gradient(45deg, #f5576c, #f093fb);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+        color: white;
+    }
+
+    /* Map Container */
+    .map-container {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .map-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    }
+
+    #map {
+        height: 500px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border: 2px solid rgba(255,255,255,0.5);
+    }
+
+    /* Table Container */
+    .table-container {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 25px;
+        border: 2px solid rgba(255,255,255,0.3);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .table-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .table-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .table-icon {
+        font-size: 1.5rem;
+        color: #667eea;
+    }
+
+    .table-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #667eea;
+        margin: 0;
+    }
+
+    /* DataTables Customization */
+    .dataTables_wrapper {
+        background: transparent;
+    }
+
+    .dataTables_filter input {
+        border: 2px solid rgba(102, 126, 234, 0.2);
+        border-radius: 8px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(10px);
+    }
+
+    .dataTables_filter input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .table {
+        background: transparent;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 15px 12px;
+        text-align: center;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.7);
+    }
+
+    .table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: scale(1.01);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .table tbody td {
+        padding: 12px;
+        border: none;
+        border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        text-align: center;
+    }
+
+    /* Type Badges */
+    .type-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .type-kml {
+        background: linear-gradient(45deg, #43e97b, #38f9d7);
+        color: white;
+    }
+
+    .type-csv {
+        background: linear-gradient(45deg, #f5576c, #f093fb);
+        color: white;
+    }
+
+    .type-shapefile {
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .main-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .filter-sidebar {
+            position: static;
+            order: 2;
+        }
+        
+        .map-table-section {
+            order: 1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .viewmap-container {
+            padding: 20px 15px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+        }
+        
+        .export-section {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        
+        #map {
+            height: 350px;
+        }
+    }
+
+    /* Loading Animation */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Floating Animation for Elements */
+    .floating {
+        animation: floating 3s ease-in-out infinite;
+    }
+
+    @keyframes floating {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+</style>
+
+<div class="viewmap-container">
+    <!-- Hidden CSRF token for AJAX requests -->
+    {% csrf_token %}
+    
+    <!-- Beautiful Page Header -->
+    <div class="page-header">
+        <h1 class="page-title floating">🗺️ View Maps & Data</h1>
+        <p class="page-subtitle">Explore and analyze your geospatial survey data with interactive maps and advanced filtering</p>
+    </div>
+
+    <div class="main-content">
+        <!-- Enhanced Filter Sidebar -->
+        <div class="filter-sidebar">
+            <div class="filter-header">
+                <i class="bi bi-funnel-fill filter-icon"></i>
+                <h3 class="filter-title">Advanced Filters</h3>
+            </div>
+            <form id="filterForm">
+                <div class="form-group">
+                    <label class="form-label">📍 Name</label>
+                    <input type="text" class="form-control" name="name" placeholder="Enter name...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🏷️ Kitta No</label>
+                    <input type="text" class="form-control" name="kitta_no" placeholder="Enter kitta number...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔢 SN No</label>
+                    <input type="text" class="form-control" name="sn_no" placeholder="Enter SN number...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🏛️ District</label>
+                    <input type="text" class="form-control" name="district" placeholder="Enter district...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🏘️ Municipality</label>
+                    <input type="text" class="form-control" name="municipality" placeholder="Enter municipality...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🏢 Ward</label>
+                    <input type="text" class="form-control" name="ward" placeholder="Enter ward...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📍 Location</label>
+                    <input type="text" class="form-control" name="location" placeholder="Enter location...">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="bi bi-search"></i> Apply Filters
+                </button>
+                <button type="button" class="btn btn-outline-secondary w-100" id="resetFilter">
+                    <i class="bi bi-x-circle"></i> Reset All
+                </button>
+            </form>
+        </div>
+
+        <!-- Enhanced Map and Table Section -->
+        <div class="map-table-section">
+            <!-- Export Section -->
+            <div class="export-section">
+                <div class="status-info">
+                    <div class="status-badge" id="dataStatus">
+                        <i class="bi bi-database"></i> Loading...
+                    </div>
+                </div>
+                <button class="export-btn" id="exportPDF">
+                    <i class="bi bi-file-earmark-pdf"></i> Export to PDF
+                </button>
+            </div>
+
+            <!-- Map Container -->
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <div class="table-header">
+                    <i class="bi bi-table table-icon"></i>
+                    <h3 class="table-title">Data Records</h3>
+                </div>
+                <table id="dataTable" class="table table-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Kitta No</th>
+                            <th>SN No</th>
+                            <th>District</th>
+                            <th>Municipality</th>
+                            <th>Ward</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+    let table, map, geojsonLayer, features = [];
+    let currentData = [];
+    
+    function getGeoJSON(data) {
+        return {
+            type: 'FeatureCollection',
+            features: data.map(row => ({
+                type: 'Feature',
+                properties: {...row},
+                geometry: {
+                    type: 'Point',
+                    coordinates: [row.coords[1], row.coords[0]]
+                }
+            }))
+        };
+    }
+    
+    function loadData(filters = {}) {
+        // Show loading state
+        document.getElementById('dataStatus').innerHTML = '<div class="loading-spinner"></div> Loading...';
+        
+        const queryString = new URLSearchParams(filters).toString();
+        const url = `/dashboard/viewmap/data/${queryString ? '?' + queryString : ''}`;
+        
+        console.log('🔍 Making request to:', url);
+        
+        fetch(url)
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Data received:', data);
+                console.log('📊 Records count:', data.data ? data.data.length : 0);
+                
+                currentData = data.data;
+                
+                // Update table with beautiful styling
+                table.clear().rows.add(currentData).draw();
+                
+                // Update map
+                if (geojsonLayer) {
+                    map.removeLayer(geojsonLayer);
+                }
+                features = [];
+                
+                if (currentData.length > 0) {
+                    console.log('🗺️ Adding data to map:', currentData.length, 'features');
+                    geojsonLayer = L.geoJSON(getGeoJSON(currentData), {
+                        onEachFeature: function (feature, layer) {
+                            const popupContent = `
+                                <div style="text-align: center; padding: 10px;">
+                                    <h4 style="color: #667eea; margin-bottom: 10px;">${feature.properties.name}</h4>
+                                    <p><strong>Kitta No:</strong> ${feature.properties.kitta_no}</p>
+                                    <p><strong>Type:</strong> <span class="type-badge type-${feature.properties.type.toLowerCase()}">${feature.properties.type}</span></p>
+                                    <p><strong>District:</strong> ${feature.properties.district}</p>
+                                </div>
+                            `;
+                            layer.bindPopup(popupContent);
+                            features.push(layer);
+                        },
+                        pointToLayer: function (feature, latlng) {
+                            let color = '#667eea';
+                            if (feature.properties.type === 'KML') color = '#43e97b';
+                            else if (feature.properties.type === 'CSV') color = '#f5576c';
+                            else if (feature.properties.type === 'Shapefile') color = '#4facfe';
+                            
+                            return L.circleMarker(latlng, {
+                                radius: 10, 
+                                fillColor: color, 
+                                color: '#333', 
+                                weight: 2, 
+                                fillOpacity: 0.8
+                            });
+                        }
+                    }).addTo(map);
+                    
+                    const bounds = geojsonLayer.getBounds();
+                    map.fitBounds(bounds);
+                    console.log('🗺️ Map updated with bounds:', bounds);
+                } else {
+                    console.log('⚠️ No data to display on map');
+                }
+                
+                updateStatus(data.total, data.filters_applied);
+            })
+            .catch(error => {
+                console.error('❌ Error loading data:', error);
+                document.getElementById('dataStatus').innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error loading data';
+            });
+    }
+    
+    function updateStatus(total, filters) {
+        const statusDiv = document.getElementById('dataStatus');
+        let filterText = '';
+        const activeFilters = Object.entries(filters).filter(([key, value]) => value);
+        if (activeFilters.length > 0) {
+            filterText = ' (filtered)';
+        }
+        
+        statusDiv.innerHTML = `<i class="bi bi-database"></i> ${total} Records${filterText}`;
+    }
+    
+    $(document).ready(function() {
+        // Enhanced DataTable
+        table = $('#dataTable').DataTable({
+            data: [],
+            columns: [
+                {data: 'id'},
+                {data: 'name'},
+                {data: 'kitta_no'},
+                {data: 'sn_no'},
+                {data: 'district'},
+                {data: 'municipality'},
+                {data: 'ward'},
+                {data: 'location'},
+                {
+                    data: 'type',
+                    render: function(data) {
+                        return `<span class="type-badge type-${data.toLowerCase()}">${data}</span>`;
+                    }
+                }
+            ],
+            responsive: true,
+            select: true,
+            order: [[0, 'asc']],
+            pageLength: 10,
+            language: {
+                search: "🔍 Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    first: "«",
+                    previous: "‹",
+                    next: "›",
+                    last: "»"
+                }
+            }
+        });
+        
+        // Enhanced Leaflet Map
+        map = L.map('map').setView([27.6693, 85.3287], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Load initial data
+        loadData();
+        
+        // Enhanced table row click
+        $('#dataTable tbody').on('click', 'tr', function () {
+            var data = table.row(this).data();
+            if (!data) return;
+            
+            // Remove previous highlights
+            features.forEach(f => {
+                const type = f.feature.properties.type;
+                let color = '#667eea';
+                if (type === 'KML') color = '#43e97b';
+                else if (type === 'CSV') color = '#f5576c';
+                else if (type === 'Shapefile') color = '#4facfe';
+                f.setStyle({fillColor: color, radius: 10});
+            });
+            
+            var found = features.find(f => f.feature.properties.id === data.id);
+            if (found) {
+                found.openPopup();
+                map.setView([data.coords[0], data.coords[1]], 16, {animate: true});
+                found.setStyle({fillColor: '#667eea', radius: 15, weight: 3});
+            }
+        });
+        
+        // Enhanced filter form
+        $('#filterForm').on('submit', function(e) {
+            e.preventDefault();
+            let filters = {};
+            $(this).serializeArray().forEach(f => { 
+                if (f.value) filters[f.name] = f.value; 
+            });
+            loadData(filters);
+        });
+        
+        $('#resetFilter').on('click', function() {
+            $('#filterForm')[0].reset();
+            loadData();
+        });
+        
+        // Enhanced export to PDF
+        $('#exportPDF').on('click', function() {
+            const btn = $(this);
+            const originalText = btn.html();
+            btn.html('<div class="loading-spinner"></div> Generating...');
+            btn.prop('disabled', true);
+            
+            let filters = {};
+            $('#filterForm').serializeArray().forEach(f => { 
+                if (f.value) filters[f.name] = f.value; 
+            });
+            
+            const queryString = new URLSearchParams(filters).toString();
+            const url = `/dashboard/viewmap/export/pdf/${queryString ? '?' + queryString : ''}`;
+            
+            window.open(url, '_blank');
+            
+            setTimeout(() => {
+                btn.html(originalText);
+                btn.prop('disabled', false);
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %} 

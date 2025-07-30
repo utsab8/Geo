@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Files Test</title>
+    <link rel="stylesheet" href="/static/account/login.css">
+    <style>
+        .test-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 50px auto;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        CSS Test - If you see this styled, CSS is working!
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <p>If the box above has a purple gradient background and white text, CSS is working correctly.</p>
+        <p>If not, there might be an issue with static file serving.</p>
+    </div>
+</body>
+</html> 

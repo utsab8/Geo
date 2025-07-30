@@ -1,0 +1,569 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}File Upload - GeoSurvey{% endblock %}
+{% block content %}
+
+<style>
+/* File Upload Styles */
+.upload-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.upload-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.upload-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientText 3s ease-in-out infinite;
+    margin-bottom: 15px;
+}
+
+.upload-header p {
+    font-size: 1.2rem;
+    color: #6c757d;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.upload-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 40px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-bottom: 40px;
+    animation: slideInUp 0.8s ease-out;
+}
+
+.drop-zone {
+    border: 3px dashed #667eea;
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.drop-zone:hover {
+    border-color: #764ba2;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    transform: translateY(-2px);
+}
+
+.drop-zone.dragover {
+    border-color: #f093fb;
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    animation: bounce 2s infinite;
+}
+
+.upload-text h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.upload-text p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.file-info {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.file-info.show {
+    display: block;
+    animation: slideInDown 0.5s ease-out;
+}
+
+.file-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.file-detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-detail-icon {
+    font-size: 1.2rem;
+    color: #667eea;
+}
+
+.file-detail-text {
+    color: #495057;
+    font-weight: 500;
+}
+
+.progress-container {
+    margin-top: 20px;
+    display: none;
+}
+
+.progress-container.show {
+    display: block;
+    animation: slideInUp 0.5s ease-out;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    animation: progressPulse 2s infinite;
+}
+
+.file-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.file-type-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.file-type-card.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.file-type-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.file-type-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.file-type-desc {
+    color: #6c757d;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.file-type-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.file-type-features li {
+    padding: 5px 0;
+    color: #495057;
+    position: relative;
+    padding-left: 25px;
+}
+
+.file-type-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* Animations */
+@keyframes gradientText {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes progressPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 20px 15px;
+    }
+    
+    .upload-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .upload-section {
+        padding: 30px 20px;
+    }
+    
+    .drop-zone {
+        padding: 40px 20px;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+    }
+    
+    .file-types {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+</style>
+
+<div class="upload-container">
+    <div class="upload-header">
+        <h1>Upload Your Files</h1>
+        <p>Upload KML, CSV, or Shapefile files for geospatial data analysis and conversion. All files are automatically validated and processed.</p>
+    </div>
+
+    <div class="upload-section">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            
+            <div class="drop-zone" id="dropZone">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">
+                    <h3>Drag & Drop Files Here</h3>
+                    <p>or click to browse your files</p>
+                    <input type="file" name="file" id="fileInput" class="file-input" accept=".kml,.csv,.zip,.shp,.shx,.dbf,.prj">
+                    <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        Choose File
+                    </button>
+                </div>
+            </div>
+
+            <div class="file-info" id="fileInfo">
+                <div class="file-details">
+                    <div class="file-detail">
+                        <span class="file-detail-icon">📄</span>
+                        <span class="file-detail-text" id="fileName">-</span>
+                    </div>
+                    <div class="file-detail">
+                        <span class="file-detail-icon">📏</span>
+                        <span class="file-detail-text" id="fileSize">-</span>
+                    </div>
+                    <div class="file-detail">
+                        <span class="file-detail-icon">🏷️</span>
+                        <span class="file-detail-text" id="fileType">-</span>
+                    </div>
+                </div>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <p style="text-align: center; color: #6c757d; margin: 0;">Processing file...</p>
+                </div>
+                
+                <button type="submit" class="upload-btn" style="width: 100%; margin-top: 20px;" id="submitBtn">
+                    Upload File
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="file-types">
+        <div class="file-type-card" data-type="kml">
+            <div class="file-type-icon">🗺️</div>
+            <div class="file-type-title">KML Files</div>
+            <div class="file-type-desc">Google Earth Keyhole Markup Language files for geographic data</div>
+            <ul class="file-type-features">
+                <li>Placemark extraction</li>
+                <li>Coordinate parsing</li>
+                <li>Area calculations</li>
+                <li>Export to CSV/Shapefile</li>
+            </ul>
+        </div>
+        
+        <div class="file-type-card" data-type="csv">
+            <div class="file-type-icon">📊</div>
+            <div class="file-type-title">CSV Files</div>
+            <div class="file-type-desc">Comma-separated values with coordinate data</div>
+            <ul class="file-type-features">
+                <li>Coordinate validation</li>
+                <li>Data analysis</li>
+                <li>Export to KML/Shapefile</li>
+                <li>Map preview</li>
+            </ul>
+        </div>
+        
+        <div class="file-type-card" data-type="shapefile">
+            <div class="file-type-icon">🗺️</div>
+            <div class="file-type-title">Shapefiles</div>
+            <div class="file-type-desc">ESRI Shapefile format (.shp, .shx, .dbf, .prj)</div>
+            <ul class="file-type-features">
+                <li>Geometry analysis</li>
+                <li>Attribute extraction</li>
+                <li>Export to KML/CSV</li>
+                <li>CRS detection</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileType = document.getElementById('fileType');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressFill = document.getElementById('progressFill');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const fileTypeCards = document.querySelectorAll('.file-type-card');
+
+    // Drag and drop functionality
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    // File type card selection
+    fileTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            fileTypeCards.forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+
+    function handleFile(file) {
+        // Validate file
+        const allowedTypes = ['.kml', '.csv', '.zip', '.shp', '.shx', '.dbf', '.prj'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(fileExtension)) {
+            alert('Please select a valid file type (KML, CSV, or Shapefile)');
+            return;
+        }
+
+        // Update file info
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        
+        // Detect file type
+        let detectedType = 'Unknown';
+        if (fileExtension === '.kml') detectedType = 'KML File';
+        else if (fileExtension === '.csv') detectedType = 'CSV File';
+        else if (['.zip', '.shp', '.shx', '.dbf', '.prj'].includes(fileExtension)) detectedType = 'Shapefile';
+        
+        fileType.textContent = detectedType;
+        
+        // Show file info
+        fileInfo.classList.add('show');
+        
+        // Set file input
+        fileInput.files = new DataTransfer().files;
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Form submission
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!fileInput.files.length) {
+            alert('Please select a file to upload');
+            return;
+        }
+
+        // Show progress
+        progressContainer.classList.add('show');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Uploading...';
+
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressFill.style.width = progress + '%';
+        }, 200);
+
+        // Submit form
+        const formData = new FormData(uploadForm);
+        
+        fetch('', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            clearInterval(progressInterval);
+            progressFill.style.width = '100%';
+            
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                return response.text();
+            }
+        })
+        .catch(error => {
+            clearInterval(progressInterval);
+            console.error('Error:', error);
+            alert('Upload failed. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Upload File';
+            progressContainer.classList.remove('show');
+        });
+    });
+
+    // Pre-select file type if specified
+    const preSelectedType = '{{ pre_selected_type }}';
+    if (preSelectedType) {
+        const card = document.querySelector(`[data-type="${preSelectedType}"]`);
+        if (card) {
+            card.classList.add('selected');
+        }
+    }
+});
+</script>
+
+{% endblock %} 

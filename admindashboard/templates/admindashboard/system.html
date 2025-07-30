@@ -1,0 +1,1360 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoSurveyPro - System Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'admindashboard/dashboard.css' %}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .system-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .system-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            border: none;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+        
+        .status-offline {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+        
+        .log-entry {
+            padding: 10px;
+            border-left: 3px solid #e2e8f0;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .log-entry.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .log-entry.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .log-entry.info {
+            border-left-color: #2563eb;
+            background: #eff6ff;
+        }
+        
+        .maintenance-window {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .performance-chart {
+            height: 300px;
+        }
+        
+        .alert-card {
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .alert-card.critical {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .alert-card.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .alert-card.info {
+            border-left-color: #2563eb;
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin-users' %}">
+                                <i class="fas fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin-survey' %}">
+                                <i class="fas fa-file-alt"></i> Surveys
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'admin-system' %}">
+                                <i class="fas fa-cogs"></i> System
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin-settings' %}">
+                                <i class="fas fa-sliders-h me-2"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li class="nav-item mt-4">
+                            <a class="nav-link text-danger" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">System Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshSystem()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="createBackup()">
+                                <i class="fas fa-database"></i> Backup
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" onclick="scheduleMaintenance()">
+                                <i class="fas fa-tools"></i> Maintenance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status Overview -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="metric-card">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="metric-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                        <i class="fas fa-server"></i>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="text-sm font-weight-bold text-muted text-uppercase mb-1">System Status</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="systemStatus">Online</div>
+                                    <div class="text-success small"><span class="status-indicator status-online"></span>All systems operational</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="metric-card">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="metric-icon" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="text-sm font-weight-bold text-muted text-uppercase mb-1">CPU Usage</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="cpuUsage">0%</div>
+                                    <div class="text-info small"><i class="fas fa-arrow-up"></i> <span id="cpuTrend">0%</span> from last hour</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="metric-card">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="metric-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                        <i class="fas fa-memory"></i>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="text-sm font-weight-bold text-muted text-uppercase mb-1">Memory Usage</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="memoryUsage">0%</div>
+                                    <div class="text-warning small"><i class="fas fa-arrow-up"></i> <span id="memoryTrend">0%</span> from last hour</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="metric-card">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="metric-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="text-sm font-weight-bold text-muted text-uppercase mb-1">Active Alerts</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeAlerts">0</div>
+                                    <div class="text-danger small"><i class="fas fa-bell"></i> <span id="criticalAlerts">0</span> critical</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Charts -->
+                <div class="row mb-4">
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>System Performance</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performanceChart" class="performance-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Resource Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="resourceChart" class="performance-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Health & Alerts -->
+                <div class="row mb-4">
+                    <div class="col-lg-8">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>System Health</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-hdd text-primary fa-2x"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-0">Disk Usage</h6>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar" id="diskProgress" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small class="text-muted" id="diskText">0% (0 GB / 0 GB)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-network-wired text-success fa-2x"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-0">Network</h6>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" id="networkProgress" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small class="text-muted" id="networkText">0 Mbps</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-database text-warning fa-2x"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-0">Database</h6>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-warning" id="dbProgress" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small class="text-muted" id="dbText">0 connections</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-clock text-info fa-2x"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-0">Uptime</h6>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-info" id="uptimeProgress" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <small class="text-muted" id="uptimeText">0 days</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>Active Alerts</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="alertsContainer">
+                                    <!-- Alerts will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance & Logs -->
+                <div class="row mb-4">
+                    <div class="col-lg-6">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Maintenance Windows</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="maintenanceContainer">
+                                    <!-- Maintenance windows will be loaded here -->
+                                </div>
+                                <button class="btn btn-primary btn-sm mt-3" onclick="scheduleMaintenance()">
+                                    <i class="fas fa-plus me-2"></i>Schedule Maintenance
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>System Logs</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="logsContainer">
+                                    <!-- Logs will be loaded here -->
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm mt-3" onclick="viewAllLogs()">
+                                    <i class="fas fa-external-link-alt me-2"></i>View All Logs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup & Recovery -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-database me-2"></i>Backup & Recovery</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="text-center">
+                                            <i class="fas fa-download fa-3x text-primary mb-3"></i>
+                                            <h6>Last Backup</h6>
+                                            <p class="text-muted" id="lastBackup">Never</p>
+                                            <button class="btn btn-primary btn-sm" onclick="createBackup()">
+                                                <i class="fas fa-database me-2"></i>Create Backup
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="text-center">
+                                            <i class="fas fa-upload fa-3x text-success mb-3"></i>
+                                            <h6>Backup Status</h6>
+                                            <p class="text-muted" id="backupStatus">No backups</p>
+                                            <button class="btn btn-success btn-sm" onclick="restoreBackup()">
+                                                <i class="fas fa-undo me-2"></i>Restore
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="text-center">
+                                            <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                                            <h6>Auto Backup</h6>
+                                            <p class="text-muted" id="autoBackupStatus">Disabled</p>
+                                            <button class="btn btn-warning btn-sm" onclick="configureAutoBackup()">
+                                                <i class="fas fa-cog me-2"></i>Configure
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Services -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>System Services</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="servicesContainer">
+                                    <!-- Services will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Controls -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>System Controls</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-success w-100" onclick="restartServices()">
+                                            <i class="fas fa-redo me-2"></i>Restart Services
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-warning w-100" onclick="clearCache()">
+                                            <i class="fas fa-broom me-2"></i>Clear Cache
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-info w-100" onclick="backupSystem()">
+                                            <i class="fas fa-download me-2"></i>Backup System
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <button class="btn btn-danger w-100" onclick="emergencyShutdown()">
+                                            <i class="fas fa-power-off me-2"></i>Emergency Shutdown
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed System Information -->
+                <div class="row mb-4">
+                    <div class="col-lg-6">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>System Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>OS Version:</strong>
+                                        <div id="osVersion">Loading...</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Python Version:</strong>
+                                        <div id="pythonVersion">Loading...</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Django Version:</strong>
+                                        <div id="djangoVersion">Loading...</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Database:</strong>
+                                        <div id="databaseInfo">Loading...</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Server Time:</strong>
+                                        <div id="serverTime">Loading...</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Timezone:</strong>
+                                        <div id="timezone">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="text-center">
+                                            <h4 id="totalUsers" class="text-primary">0</h4>
+                                            <small class="text-muted">Total Users</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="text-center">
+                                            <h4 id="activeUsers" class="text-success">0</h4>
+                                            <small class="text-muted">Active Users</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="text-center">
+                                            <h4 id="totalSessions" class="text-info">0</h4>
+                                            <small class="text-muted">Active Sessions</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="text-center">
+                                            <h4 id="newUsersToday" class="text-warning">0</h4>
+                                            <small class="text-muted">New Today</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Application Services Status -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-server me-2"></i>Application Services</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="servicesContainer">
+                                    <!-- Services will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security & Monitoring -->
+                <div class="row mb-4">
+                    <div class="col-lg-6">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Status</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="securityContainer">
+                                    <!-- Security status will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card system-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Real-time Monitoring</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="monitoringContainer">
+                                    <!-- Real-time monitoring will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        let performanceChart, resourceChart;
+        let refreshInterval;
+
+        // Initialize system page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSystemData();
+            loadSystemInformation();
+            loadUserStatistics();
+            loadSecurityStatus();
+            loadRealTimeMonitoring();
+            initializeCharts();
+            setupRealTimeUpdates();
+        });
+
+        function loadSystemData() {
+            // Load system status
+            fetch('{% url "admin_api_system_status" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSystemStatus(data.status);
+                    }
+                })
+                .catch(error => console.error('Error loading system status:', error));
+
+            // Load performance metrics
+            loadPerformanceMetrics();
+            
+            // Load alerts
+            loadSystemAlerts();
+            
+            // Load maintenance windows
+            loadMaintenanceWindows();
+            
+            // Load system logs
+            loadSystemLogs();
+            
+            // Load backup info
+            loadBackupInfo();
+            
+            // Load services
+            loadSystemServices();
+        }
+
+        function updateSystemStatus(status) {
+            document.getElementById('systemStatus').textContent = status.overall_status;
+            document.getElementById('cpuUsage').textContent = status.cpu_usage + '%';
+            document.getElementById('memoryUsage').textContent = status.memory_usage + '%';
+            document.getElementById('activeAlerts').textContent = status.active_alerts;
+            
+            // Update trends
+            document.getElementById('cpuTrend').textContent = status.cpu_trend + '%';
+            document.getElementById('memoryTrend').textContent = status.memory_trend + '%';
+            document.getElementById('criticalAlerts').textContent = status.critical_alerts;
+        }
+
+        function loadPerformanceMetrics() {
+            fetch('{% url "admin_api_system_performance" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updatePerformanceMetrics(data.metrics);
+                    }
+                })
+                .catch(error => console.error('Error loading performance metrics:', error));
+        }
+
+        function updatePerformanceMetrics(metrics) {
+            // Update progress bars
+            document.getElementById('diskProgress').style.width = metrics.disk_usage + '%';
+            document.getElementById('diskText').textContent = `${metrics.disk_usage}% (${metrics.disk_used} GB / ${metrics.disk_total} GB)`;
+            
+            document.getElementById('networkProgress').style.width = Math.min(metrics.network_usage / 100, 100) + '%';
+            document.getElementById('networkText').textContent = metrics.network_usage + ' Mbps';
+            
+            document.getElementById('dbProgress').style.width = Math.min(metrics.db_connections / 100, 100) + '%';
+            document.getElementById('dbText').textContent = metrics.db_connections + ' connections';
+            
+            document.getElementById('uptimeProgress').style.width = Math.min(metrics.uptime_percentage, 100) + '%';
+            document.getElementById('uptimeText').textContent = metrics.uptime_days + ' days';
+        }
+
+        function loadSystemAlerts() {
+            fetch('{% url "admin_api_system_activity" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayAlerts(data.alerts);
+                    }
+                })
+                .catch(error => console.error('Error loading alerts:', error));
+        }
+
+        function displayAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = '';
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No active alerts</p>';
+                return;
+            }
+
+            alerts.forEach(alert => {
+                const alertItem = document.createElement('div');
+                alertItem.className = `alert-card ${alert.severity}`;
+                alertItem.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${getAlertIcon(alert.severity)} text-${getAlertColor(alert.severity)} me-2"></i>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${alert.title}</h6>
+                            <p class="mb-0 small">${alert.message}</p>
+                        </div>
+                        <small class="text-muted">${formatTimeAgo(alert.created_at)}</small>
+                    </div>
+                `;
+                container.appendChild(alertItem);
+            });
+        }
+
+        function loadMaintenanceWindows() {
+            fetch('{% url "admin_api_system_logs" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayMaintenanceWindows(data.maintenance_windows);
+                    }
+                })
+                .catch(error => console.error('Error loading maintenance windows:', error));
+        }
+
+        function displayMaintenanceWindows(windows) {
+            const container = document.getElementById('maintenanceContainer');
+            container.innerHTML = '';
+
+            if (windows.length === 0) {
+                container.innerHTML = '<p class="text-muted">No scheduled maintenance</p>';
+                return;
+            }
+
+            windows.forEach(window => {
+                const windowItem = document.createElement('div');
+                windowItem.className = 'maintenance-window';
+                windowItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${window.title}</h6>
+                            <p class="mb-1 small">${window.description}</p>
+                            <small class="text-muted">${formatDate(window.start_time)} - ${formatDate(window.end_time)}</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-${window.is_active ? 'warning' : 'secondary'}">${window.is_active ? 'Active' : 'Scheduled'}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(windowItem);
+            });
+        }
+
+        function loadSystemLogs() {
+            fetch('{% url "admin_api_system_logs" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySystemLogs(data.logs);
+                    }
+                })
+                .catch(error => console.error('Error loading logs:', error));
+        }
+
+        function displaySystemLogs(logs) {
+            const container = document.getElementById('logsContainer');
+            container.innerHTML = '';
+
+            logs.forEach(log => {
+                const logItem = document.createElement('div');
+                logItem.className = `log-entry ${log.level}`;
+                logItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">${log.message}</div>
+                            <small class="text-muted">${log.source}</small>
+                        </div>
+                        <small class="text-muted">${formatTimeAgo(log.timestamp)}</small>
+                    </div>
+                `;
+                container.appendChild(logItem);
+            });
+        }
+
+        function loadBackupInfo() {
+            fetch('{% url "admin_api_system_backup" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateBackupInfo(data.backup_info);
+                    }
+                })
+                .catch(error => console.error('Error loading backup info:', error));
+        }
+
+        function updateBackupInfo(info) {
+            document.getElementById('lastBackup').textContent = info.last_backup || 'Never';
+            document.getElementById('backupStatus').textContent = info.backup_status || 'No backups';
+            document.getElementById('autoBackupStatus').textContent = info.auto_backup_enabled ? 'Enabled' : 'Disabled';
+        }
+
+        function loadSystemServices() {
+            fetch('{% url "admin_api_system_status" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySystemServices(data.services);
+                    }
+                })
+                .catch(error => console.error('Error loading services:', error));
+        }
+
+        function displaySystemServices(services) {
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = '';
+
+            services.forEach(service => {
+                const serviceItem = document.createElement('div');
+                serviceItem.className = 'col-md-4 mb-3';
+                serviceItem.innerHTML = `
+                    <div class="d-flex align-items-center p-3 border rounded">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-${getServiceIcon(service.name)} fa-2x text-${getServiceColor(service.status)}"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">${service.name}</h6>
+                            <small class="text-muted">${service.description}</small>
+                            <div class="mt-2">
+                                <span class="status-indicator status-${service.status}"></span>
+                                <small class="text-${getServiceColor(service.status)}">${service.status}</small>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <button class="btn btn-sm btn-outline-${service.status === 'online' ? 'danger' : 'success'}" 
+                                    onclick="toggleService('${service.name}')">
+                                <i class="fas fa-${service.status === 'online' ? 'stop' : 'play'}"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(serviceItem);
+            });
+        }
+
+        function initializeCharts() {
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [{
+                        label: 'CPU Usage',
+                        data: [25, 30, 45, 60, 40, 35],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Memory Usage',
+                        data: [40, 45, 50, 65, 55, 45],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Resource Chart
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            resourceChart = new Chart(resourceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CPU', 'Memory', 'Disk', 'Network'],
+                    datasets: [{
+                        data: [35, 45, 15, 5],
+                        backgroundColor: [
+                            '#2563eb',
+                            '#f59e0b',
+                            '#10b981',
+                            '#6b7280'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupRealTimeUpdates() {
+            // Update data every 30 seconds
+            refreshInterval = setInterval(() => {
+                loadSystemData();
+            }, 30000);
+        }
+
+        // System Actions
+        function refreshSystem() {
+            loadSystemData();
+            showToast('System data refreshed', 'success');
+        }
+
+        function restartServices() {
+            if (confirm('Are you sure you want to restart all services? This may cause temporary downtime.')) {
+                fetch('{% url "admin_api_system_status" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ action: 'restart_services' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Services restarted successfully', 'success');
+                        setTimeout(() => loadSystemServices(), 5000);
+                    } else {
+                        showToast('Error restarting services: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Error restarting services: ' + error.message, 'error');
+                });
+            }
+        }
+
+        function clearCache() {
+            if (confirm('Are you sure you want to clear all system cache?')) {
+                fetch('{% url "admin_api_system_status" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ action: 'clear_cache' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Cache cleared successfully', 'success');
+                        loadSystemData();
+                    } else {
+                        showToast('Error clearing cache: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Error clearing cache: ' + error.message, 'error');
+                });
+            }
+        }
+
+        function backupSystem() {
+            showToast('Starting system backup...', 'info');
+            fetch('{% url "admin_api_system_backup" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ action: 'create_backup' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('System backup completed successfully', 'success');
+                    loadBackupInfo();
+                } else {
+                    showToast('Error creating backup: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Error creating backup: ' + error.message, 'error');
+            });
+        }
+
+        function emergencyShutdown() {
+            if (confirm('⚠️ WARNING: This will shut down the entire system. Are you absolutely sure?')) {
+                const password = prompt('Enter admin password to confirm emergency shutdown:');
+                if (password) {
+                    fetch('{% url "admin_api_system_status" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ 
+                            action: 'emergency_shutdown',
+                            password: password
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Emergency shutdown initiated', 'warning');
+                        } else {
+                            showToast('Error: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showToast('Error: ' + error.message, 'error');
+                    });
+                }
+            }
+        }
+
+        function scheduleMaintenance() {
+            const maintenanceWindow = prompt('Enter maintenance window (e.g., "2024-01-15 02:00-04:00"):');
+            if (maintenanceWindow) {
+                fetch('{% url "admin_api_system_status" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ 
+                        action: 'schedule_maintenance',
+                        window: maintenanceWindow
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Maintenance window scheduled', 'success');
+                        loadMaintenanceWindows();
+                    } else {
+                        showToast('Error scheduling maintenance: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Error scheduling maintenance: ' + error.message, 'error');
+                });
+            }
+        }
+
+        function restoreBackup() {
+            if (confirm('Are you sure you want to restore from backup? This will overwrite current data.')) {
+                showToast('Backup restoration started', 'info');
+            }
+        }
+
+        function configureAutoBackup() {
+            showToast('Auto backup configuration opened', 'info');
+        }
+
+        function viewAllLogs() {
+            showToast('Opening full log viewer', 'info');
+        }
+
+        function toggleService(serviceName) {
+            fetch('{% url "admin_api_system_status" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ 
+                    action: 'toggle_service',
+                    service: serviceName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(`Service ${serviceName} ${data.status}`, 'success');
+                    loadSystemServices();
+                } else {
+                    showToast('Error toggling service: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Error toggling service: ' + error.message, 'error');
+            });
+        }
+
+        function loadSystemInformation() {
+            fetch('{% url "admin_api_system_status" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSystemInfo(data.system_info);
+                    }
+                })
+                .catch(error => console.error('Error loading system info:', error));
+        }
+
+        function updateSystemInfo(info) {
+            document.getElementById('osVersion').textContent = info.os_version || 'Unknown';
+            document.getElementById('pythonVersion').textContent = info.python_version || 'Unknown';
+            document.getElementById('djangoVersion').textContent = info.django_version || 'Unknown';
+            document.getElementById('databaseInfo').textContent = info.database || 'Unknown';
+            document.getElementById('serverTime').textContent = info.server_time || 'Unknown';
+            document.getElementById('timezone').textContent = info.timezone || 'Unknown';
+        }
+
+        function loadUserStatistics() {
+            fetch('{% url "admin_api_users" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateUserStats(data.stats);
+                    }
+                })
+                .catch(error => console.error('Error loading user stats:', error));
+        }
+
+        function updateUserStats(stats) {
+            document.getElementById('totalUsers').textContent = stats.total_users || 0;
+            document.getElementById('activeUsers').textContent = stats.active_users || 0;
+            document.getElementById('totalSessions').textContent = stats.total_sessions || 0;
+            document.getElementById('newUsersToday').textContent = stats.new_users_today || 0;
+        }
+
+        function loadSecurityStatus() {
+            fetch('{% url "admin_api_system_status" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySecurityStatus(data.security);
+                    }
+                })
+                .catch(error => console.error('Error loading security status:', error));
+        }
+
+        function displaySecurityStatus(security) {
+            const container = document.getElementById('securityContainer');
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-shield-alt fa-2x text-${security.firewall ? 'success' : 'danger'}"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">Firewall</h6>
+                                <small class="text-muted">${security.firewall ? 'Active' : 'Inactive'}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-lock fa-2x text-${security.ssl ? 'success' : 'warning'}"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">SSL Certificate</h6>
+                                <small class="text-muted">${security.ssl ? 'Valid' : 'Expired'}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-user-shield fa-2x text-${security.authentication ? 'success' : 'danger'}"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">Authentication</h6>
+                                <small class="text-muted">${security.authentication ? 'Secure' : 'Vulnerable'}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-bug fa-2x text-${security.vulnerabilities === 0 ? 'success' : 'danger'}"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">Vulnerabilities</h6>
+                                <small class="text-muted">${security.vulnerabilities || 0} found</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadRealTimeMonitoring() {
+            fetch('{% url "admin_api_system_status" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayRealTimeMonitoring(data.monitoring);
+                    }
+                })
+                .catch(error => console.error('Error loading monitoring data:', error));
+        }
+
+        function displayRealTimeMonitoring(monitoring) {
+            const container = document.getElementById('monitoringContainer');
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="text-center">
+                            <h5 class="text-primary">${monitoring.requests_per_minute || 0}</h5>
+                            <small class="text-muted">Requests/min</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-center">
+                            <h5 class="text-success">${monitoring.response_time || 0}ms</h5>
+                            <small class="text-muted">Avg Response</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-center">
+                            <h5 class="text-warning">${monitoring.error_rate || 0}%</h5>
+                            <small class="text-muted">Error Rate</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="text-center">
+                            <h5 class="text-info">${monitoring.active_connections || 0}</h5>
+                            <small class="text-muted">Connections</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Last updated: ${new Date().toLocaleTimeString()}</small>
+                </div>
+            `;
+        }
+
+        function getServiceIcon(serviceName) {
+            const icons = {
+                'web': 'globe',
+                'database': 'database',
+                'cache': 'memory',
+                'queue': 'list',
+                'email': 'envelope',
+                'file': 'file',
+                'auth': 'user-shield',
+                'api': 'code'
+            };
+            return icons[serviceName.toLowerCase()] || 'server';
+        }
+
+        function getServiceColor(status) {
+            const colors = {
+                'online': 'success',
+                'offline': 'danger',
+                'warning': 'warning',
+                'maintenance': 'info'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function formatTimeAgo(timestamp) {
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diff = Math.floor((now - time) / 1000 / 60); // minutes
+            
+            if (diff < 1) return 'Just now';
+            if (diff < 60) return `${diff} minutes ago`;
+            if (diff < 1440) return `${Math.floor(diff / 60)} hours ago`;
+            return `${Math.floor(diff / 1440)} days ago`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 5000);
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

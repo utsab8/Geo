@@ -1,0 +1,25 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}CSS Test - GeoSurvey{% endblock %}
+
+{% block content %}
+<div class="test-container" style="padding: 20px; text-align: center;">
+    <h1 style="color: white; margin-bottom: 20px;">CSS Test Page</h1>
+    
+    <div class="test-navbar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; color: white;">
+        <h2>Test Navbar</h2>
+        <div class="test-profile" style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 25px; display: inline-flex; align-items: center; gap: 10px;">
+            <div class="test-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.3);"></div>
+            <span>Test User</span>
+        </div>
+    </div>
+    
+    <p style="color: white; font-size: 18px;">✅ If you can see this page with proper styling, CSS is working!</p>
+    <p style="color: white; font-size: 16px;">Background should be a purple gradient. If you see this, CSS is loading correctly!</p>
+    
+    <div style="margin-top: 30px;">
+        <a href="{% url 'user_dashboard' %}" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Go to Dashboard</a>
+    </div>
+</div>
+{% endblock %} 

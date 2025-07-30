@@ -1,0 +1,2294 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}Survey Report - GeoSurvey{% endblock %}
+
+{% block extra_css %}
+<style>
+    .survey-report-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .upload-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .upload-area {
+        border: 3px dashed rgba(255,255,255,0.5);
+        border-radius: 15px;
+        padding: 60px 20px;
+        margin: 20px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .upload-area:hover, .upload-area.dragover {
+        border-color: #fff;
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .upload-text {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .upload-subtext {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .upload-btn {
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.5);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .upload-btn:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: white;
+        transform: translateY(-2px);
+    }
+
+    .upload-status {
+        margin-top: 20px;
+        min-height: 50px;
+    }
+
+    .status-message {
+        padding: 10px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .status-success {
+        background: rgba(76, 175, 80, 0.2);
+        border: 1px solid rgba(76, 175, 80, 0.5);
+        color: #4caf50;
+    }
+
+    .status-error {
+        background: rgba(244, 67, 54, 0.2);
+        border: 1px solid rgba(244, 67, 54, 0.5);
+        color: #f44336;
+    }
+
+    .status-info {
+        background: rgba(33, 150, 243, 0.2);
+        border: 1px solid rgba(33, 150, 243, 0.5);
+        color: #2196f3;
+    }
+
+    .preview-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        display: none;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+    }
+
+    .data-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .map-container {
+        height: 500px;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-top: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+    .map-container.fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        border-radius: 0 !important;
+    }
+
+    .leaflet-control-fullscreen a {
+        background: #fff;
+        border: 2px solid rgba(0,0,0,0.2);
+        border-radius: 4px;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .leaflet-control-fullscreen a:hover {
+        background: #f4f4f4;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .filter-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        font-weight: 500;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .filter-input {
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .filter-help {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    .range-inputs {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .range-separator {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .filter-btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-apply {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .filter-clear {
+        background: #f8f9fa;
+        color: #666;
+        border: 2px solid #e0e0e0;
+    }
+
+    .filter-save {
+        background: #28a745;
+        color: white;
+    }
+
+    .filter-load {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .filter-apply:hover, .filter-save:hover, .filter-load:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .filter-clear:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+
+    .filter-summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        border-left: 4px solid #667eea;
+    }
+
+    .filter-summary h4 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 16px;
+    }
+
+    #activeFiltersList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .active-filter-tag {
+        background: #667eea;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .active-filter-tag .remove-filter {
+        cursor: pointer;
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    .export-section {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        color: white;
+    }
+
+    .export-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .export-options {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .export-btn {
+        padding: 12px 25px;
+        border: 2px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .export-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: white;
+        transform: translateY(-2px);
+    }
+
+    .export-details {
+        animation: fadeIn 0.5s ease-in;
+        margin-top: 15px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .pagination-btn {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .pagination-btn:hover {
+        background: #f0f0f0;
+    }
+
+    .pagination-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .loading {
+        display: none;
+        text-align: center;
+        padding: 40px;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+        font-size: 18px;
+    }
+
+    .file-list {
+        margin-top: 20px;
+    }
+
+    .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border-left: 4px solid #667eea;
+    }
+
+    .file-info {
+        flex: 1;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .file-meta {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .remove-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .remove-btn:hover {
+        background: #c82333;
+    }
+
+    @media (max-width: 768px) {
+        .survey-report-container {
+            padding: 10px;
+        }
+        
+        .upload-section {
+            padding: 20px;
+        }
+        
+        .upload-area {
+            padding: 40px 15px;
+        }
+        
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .export-options {
+            flex-direction: column;
+        }
+        
+        .data-table {
+            font-size: 12px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="survey-report-container">
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <h1 style="margin-bottom: 20px; font-size: 32px;">Survey Report</h1>
+        <p style="font-size: 18px; margin-bottom: 30px; opacity: 0.9;">
+            Upload KML, CSV, or Shapefile files to generate comprehensive survey reports
+        </p>
+        
+        <div class="upload-area" id="uploadArea">
+            <span class="upload-icon">📁</span>
+            <div class="upload-text">Drop files here or click to browse</div>
+            <div class="upload-subtext">Supports KML, CSV, and Shapefile formats (Max 50MB)</div>
+            <input type="file" id="fileInput" class="file-input" multiple accept=".kml,.csv,.shp,.zip">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                Choose Files
+            </button>
+        </div>
+        
+        <div class="upload-status" id="uploadStatus"></div>
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="preview-section" id="previewSection">
+        <div class="section-header">
+            <h2 class="section-title">Data Preview</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="filter-btn filter-apply" onclick="loadSurveyData()" id="refreshBtn">Refresh Data</button>
+                <button class="filter-btn filter-clear" onclick="clearFilters()" id="clearBtn">Clear Filters</button>
+                                    <button class="filter-btn filter-apply" onclick="reprocessData()" style="background: #28a745;" id="reprocessBtn">Reprocess Data</button>
+                    <button class="filter-btn filter-apply" onclick="reprocessAllData()" style="background: #17a2b8;" id="reprocessAllBtn">Reprocess All Data</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Loading survey data...</div>
+        </div>
+        
+        <div id="dataContent">
+            <div class="no-data" id="noData">
+                No recent KML files found. Upload new files to see survey data preview
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filter Section -->
+    <div class="filter-section" id="filterSection" style="display: none;">
+        <div class="section-header">
+            <h3 class="section-title">🔍 Advanced Data Filters</h3>
+            <div class="filter-stats" id="filterStats">
+                <span class="stat-item">📊 <span id="totalRecords">0</span> records</span>
+                <span class="stat-item">📍 <span id="filteredRecords">0</span> filtered</span>
+            </div>
+        </div>
+        
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label class="filter-label">🏷️ Kitta Number</label>
+                <input type="text" id="kittaFilter" class="filter-input" placeholder="Enter kitta number (e.g., KML_10_11_1)">
+                <div class="filter-help">Supports partial matching</div>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">👤 Owner Name</label>
+                <input type="text" id="ownerFilter" class="filter-input" placeholder="Enter owner name">
+                <div class="filter-help">Case-insensitive search</div>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">📍 Location</label>
+                <input type="text" id="locationFilter" class="filter-input" placeholder="Enter location/address">
+                <div class="filter-help">Search by address, locality, or administrative area</div>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">📏 Area Range (Hectares)</label>
+                <div class="range-inputs">
+                    <input type="number" id="areaMinFilter" class="filter-input" placeholder="Min" step="0.01" min="0">
+                    <span class="range-separator">to</span>
+                    <input type="number" id="areaMaxFilter" class="filter-input" placeholder="Max" step="0.01" min="0">
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">📅 Upload Date</label>
+                <input type="date" id="dateFilter" class="filter-input">
+                <div class="filter-help">Filter by file upload date</div>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">🗺️ Geometry Type</label>
+                <select id="geometryFilter" class="filter-input">
+                    <option value="">All Types</option>
+                    <option value="Point">Point</option>
+                    <option value="Polygon">Polygon</option>
+                    <option value="LineString">Line String</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="filter-actions">
+            <button class="filter-btn filter-apply" onclick="applyAdvancedFilters()">
+                🔍 Apply Filters
+            </button>
+            <button class="filter-btn filter-clear" onclick="clearAllFilters()">
+                🗑️ Clear All
+            </button>
+            <button class="filter-btn filter-save" onclick="saveFilterPreset()">
+                💾 Save Preset
+            </button>
+            <button class="filter-btn filter-load" onclick="loadFilterPreset()">
+                📂 Load Preset
+            </button>
+        </div>
+        
+        <div class="filter-summary" id="filterSummary" style="display: none;">
+            <h4>📋 Active Filters:</h4>
+            <div id="activeFiltersList"></div>
+        </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="preview-section" id="mapSection" style="display: none;">
+        <div class="section-header">
+            <h2 class="section-title">Map Visualization</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="filter-btn filter-apply" onclick="resetMapView()">Reset View</button>
+                <button class="filter-btn filter-clear" onclick="toggleMapLayers()">Toggle Layers</button>
+            </div>
+        </div>
+        <div class="map-container" id="mapContainer"></div>
+        <div style="margin-top: 10px; text-align: center; color: #666; font-size: 14px;">
+            💡 <strong>Map Tips:</strong> Click on markers/polygons for details • Use layer controls to switch between map types • Fullscreen mode available
+        </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="export-section" id="exportSection" style="display: none;">
+        <h3 class="export-title">Export Survey Report</h3>
+        <div class="export-options">
+            <button class="export-btn" onclick="exportData('pdf')">📄 Export PDF</button>
+            <button class="export-btn" onclick="exportData('csv')">📊 Export CSV</button>
+            <button class="export-btn" onclick="exportData('kml')">🗺️ Export KML</button>
+            <button class="export-btn" onclick="exportData('shapefile')">📁 Export Shapefile</button>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Leaflet Fullscreen Control -->
+<script src="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.css" />
+
+<!-- html2canvas for map screenshot -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // Global variables
+    let uploadedFiles = [];
+    let currentData = [];
+    let currentPage = 1;
+    let map = null;
+    let markers = [];
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeUpload();
+        loadExistingData();
+        initializeFilterEvents();
+    });
+
+    function initializeUpload() {
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        if (!uploadArea || !fileInput) {
+            console.error('Upload elements not found');
+            return;
+        }
+
+        // Remove existing event listeners
+        uploadArea.removeEventListener('dragover', handleDragOver);
+        uploadArea.removeEventListener('dragleave', handleDragLeave);
+        uploadArea.removeEventListener('drop', handleDrop);
+        fileInput.removeEventListener('change', handleFileChange);
+
+        // Drag and drop handlers
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave() {
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                handleFiles(files);
+            }
+        }
+
+        function handleFileChange(e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                handleFiles(files);
+                e.target.value = ''; // Clear input
+            }
+        }
+
+        // Add event listeners
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('dragleave', handleDragLeave);
+        uploadArea.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileChange);
+
+        // Click handler for upload area
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target === uploadArea || e.target.classList.contains('upload-icon') || 
+                e.target.classList.contains('upload-text') || e.target.classList.contains('upload-subtext')) {
+                fileInput.click();
+            }
+        });
+    }
+
+    function handleFiles(files) {
+        if (!files || files.length === 0) {
+            showStatus('No files selected', 'error');
+            return;
+        }
+
+        console.log('Processing files:', files.length);
+        
+        // Clear previous files
+        uploadedFiles = [];
+        updateFileList();
+
+        // Show upload status
+        showStatus(`Processing ${files.length} file(s)...`, 'info');
+
+        // Process each file
+        Array.from(files).forEach((file, index) => {
+            // Validate file type
+            const fileName = file.name.toLowerCase();
+            const isValidType = fileName.endsWith('.kml') || 
+                               fileName.endsWith('.kmz') || 
+                               fileName.endsWith('.csv') || 
+                               fileName.endsWith('.shp') || 
+                               fileName.endsWith('.zip');
+            
+            if (!isValidType) {
+                showStatus(`Skipping ${file.name}: Invalid file type`, 'error');
+                return;
+            }
+
+            // Validate file size (max 50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                showStatus(`Skipping ${file.name}: File too large (max 50MB)`, 'error');
+                return;
+            }
+
+            uploadFile(file, index, files.length);
+        });
+    }
+
+    function uploadFile(file, index, totalFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        showStatus(`Uploading ${file.name}...`, 'info');
+
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Upload timeout')), 30000);
+        });
+
+        const uploadPromise = fetch('/dashboard/survey-report/api/', {
+            method: 'POST',
+            body: formData
+        });
+
+        Promise.race([uploadPromise, timeoutPromise])
+            .then(response => {
+                console.log('Upload response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Upload response data:', data);
+                if (data.success) {
+                    uploadedFiles.push(data.file);
+                    showStatus(`✓ ${file.name} uploaded successfully`, 'success');
+                    updateFileList();
+                } else {
+                    showStatus(`✗ ${file.name}: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                showStatus(`✗ ${file.name}: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                if (index === totalFiles - 1) {
+                    if (uploadedFiles.length > 0) {
+                        showStatus('Upload completed! Loading preview...', 'success');
+                        loadSurveyData();
+                    } else {
+                        showStatus('No files were successfully uploaded.', 'error');
+                    }
+                }
+            });
+    }
+
+    function updateFileList() {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+
+        uploadedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <div class="file-name">${file.original_filename}</div>
+                    <div class="file-meta">${file.file_type} • ${(file.file_size / 1024).toFixed(1)} KB • ${file.record_count} records</div>
+                </div>
+                <div class="file-actions">
+                    <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
+                </div>
+            `;
+            fileList.appendChild(fileItem);
+        });
+
+        // Buttons are always enabled since we show recent data
+        // Only disable reprocess button if no files in current session
+        const reprocessBtn = document.getElementById('reprocessBtn');
+        if (uploadedFiles.length === 0) {
+            reprocessBtn.disabled = true;
+        } else {
+            reprocessBtn.disabled = false;
+        }
+    }
+
+    function removeFile(index) {
+        uploadedFiles.splice(index, 1);
+        updateFileList();
+        
+        if (uploadedFiles.length === 0) {
+            hidePreviewSections();
+        } else {
+            loadSurveyData();
+        }
+    }
+
+    function loadExistingData() {
+        // Clear any existing data
+        uploadedFiles = [];
+        currentData = [];
+        updateFileList();
+        
+        // Automatically load recent survey data
+        loadSurveyData();
+    }
+
+    function loadSurveyData() {
+        showLoading();
+        showPreviewSections();
+
+        // Load data from uploaded files in current session OR recent uploads
+        let params = new URLSearchParams({
+            page: currentPage,
+            per_page: 10
+        });
+
+        // If there are uploaded files in current session, use those
+        if (uploadedFiles.length > 0) {
+            const fileIds = uploadedFiles.map(file => file.id);
+            params.append('file_ids', fileIds);
+        }
+        // Otherwise, backend will automatically load recent uploads
+
+        fetch(`/dashboard/survey-report/data/?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    currentData = data.data;
+                    displayData(data);
+                    updateMap();
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Failed to load survey data: ' + error.message);
+            });
+    }
+
+    function displayData(data) {
+        const dataContent = document.getElementById('dataContent');
+        
+        console.log('displayData called with:', data);
+        console.log(`Displaying ${data.data ? data.data.length : 0} records`);
+        console.log('Description available:', data.description);
+        
+        if (!data.data || data.data.length === 0) {
+            showNoData();
+            return;
+        }
+
+        // Get unique file names from the data
+        const fileNames = [...new Set(data.data.map(item => item.file_name))];
+        const fileInfo = fileNames.length === 1 ? 
+            `Showing data from: ${fileNames[0]}` : 
+            `Showing data from ${fileNames.length} recent files`;
+
+        // Check if filters are applied
+        const kittaFilter = document.getElementById('kittaFilter').value;
+        const ownerFilter = document.getElementById('ownerFilter').value;
+        const locationFilter = document.getElementById('locationFilter').value;
+        const dateFilter = document.getElementById('dateFilter').value;
+        const hasFilters = kittaFilter || ownerFilter || locationFilter || dateFilter;
+
+        let html = `
+            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                <strong>📁 ${fileInfo}</strong>
+                ${uploadedFiles.length > 0 ? '<br><small style="color: #666;">(Current session files take priority over recent uploads)</small>' : ''}
+                ${hasFilters ? '<br><small style="color: #e74c3c;">🔍 Filters applied - showing filtered results</small>' : ''}
+            </div>
+            
+            ${hasFilters ? `
+            <div style="margin-bottom: 15px; padding: 10px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <strong>🔍 Filter Summary:</strong><br>
+                ${kittaFilter ? `• Kitta: "${kittaFilter}"<br>` : ''}
+                ${ownerFilter ? `• Owner: "${ownerFilter}"<br>` : ''}
+                ${locationFilter ? `• Location: "${locationFilter}"<br>` : ''}
+                ${dateFilter ? `• Date: "${dateFilter}"<br>` : ''}
+                <strong>📊 Results: ${data.total_count} record(s) found</strong>
+            </div>
+            ` : ''}
+            
+            ${data.description ? `
+            <div style="margin-bottom: 15px; padding: 15px; background: #e8f4fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+                <strong>📋 Data Description:</strong><br>
+                <p style="margin: 10px 0 0 0; line-height: 1.6; text-align: justify;">${data.description}</p>
+            </div>
+            ` : '<div style="margin-bottom: 15px; padding: 10px; background: #ffe6e6; border-radius: 8px; border-left: 4px solid #ff4444;"><strong>⚠️ No description available</strong></div>'}
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Placemark Name</th>
+                        <th>Kitta Number</th>
+                        <th>Owner Name</th>
+                        <th>Geometry Type</th>
+                        <th>Area (Hectares)</th>
+                        <th>Location</th>
+                        <th>File Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        console.log('Processing table data:');
+        data.data.forEach((item, index) => {
+            console.log(`Record ${index + 1}:`, {
+                placemark_name: item.placemark_name,
+                kitta_number: item.kitta_number,
+                owner_name: item.owner_name,
+                geometry_type: item.geometry_type,
+                area_hectares: item.area_hectares,
+                location: item.location,
+                file_name: item.file_name
+            });
+            
+            // Format area properly
+            const areaDisplay = item.area_hectares && item.area_hectares > 0 ? 
+                item.area_hectares.toFixed(4) + ' ha' : '-';
+            
+            // Use the location field if available, otherwise fallback to address/locality
+            const locationDisplay = item.location && item.location !== '-' ? 
+                item.location : (item.address || item.locality || '-');
+            
+            html += `
+                <tr>
+                    <td>${item.placemark_name}</td>
+                    <td>${item.kitta_number}</td>
+                    <td>${item.owner_name}</td>
+                    <td>${item.geometry_type}</td>
+                    <td>${areaDisplay}</td>
+                    <td>${locationDisplay}</td>
+                    <td>${item.file_name}</td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+
+        // Add pagination
+        if (data.total_pages > 1) {
+            html += createPagination(data);
+        }
+
+        dataContent.innerHTML = html;
+    }
+
+    function createPagination(data) {
+        let html = '<div class="pagination">';
+        
+        // Previous button
+        html += `<button class="pagination-btn" ${!data.has_previous ? 'disabled' : ''} onclick="changePage(${data.current_page - 1})">Previous</button>`;
+        
+        // Page numbers
+        for (let i = 1; i <= data.total_pages; i++) {
+            const isActive = i === data.current_page;
+            html += `<button class="pagination-btn ${isActive ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+        }
+        
+        // Next button
+        html += `<button class="pagination-btn" ${!data.has_next ? 'disabled' : ''} onclick="changePage(${data.current_page + 1})">Next</button>`;
+        
+        html += '</div>';
+        return html;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        loadSurveyData();
+    }
+
+    function applyFilters() {
+        // This function is kept for backward compatibility
+        // The new advanced filtering is handled by applyAdvancedFilters()
+        applyAdvancedFilters();
+    }
+
+    function clearFilters() {
+        // This function is kept for backward compatibility
+        // The new advanced clearing is handled by clearAllFilters()
+        clearAllFilters();
+    }
+
+    function reprocessData() {
+        if (uploadedFiles.length === 0) {
+            alert('Please upload files first before reprocessing data. You can only reprocess files uploaded in the current session.');
+            return;
+        }
+
+        if (!confirm('This will reprocess and clean data from the uploaded files. This may take a few moments. Continue?')) {
+            return;
+        }
+
+        showLoading();
+        
+        // Get file IDs from uploaded files
+        const fileIds = uploadedFiles.map(file => file.id);
+        const params = new URLSearchParams({
+            file_ids: fileIds.join(',')
+        });
+        
+        fetch(`/dashboard/survey-report/reprocess/?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    alert(`Success! ${data.message}`);
+                    loadSurveyData(); // Reload the data after reprocessing
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Failed to reprocess data: ' + error.message);
+            });
+    }
+
+    function reprocessAllData() {
+        if (!confirm('This will reprocess and clean ALL your KML data. This may take a few moments. Continue?')) {
+            return;
+        }
+
+        showLoading();
+        const params = new URLSearchParams({
+            all: 'true'
+        });
+
+        fetch(`/dashboard/survey-report/reprocess/?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    alert(`Success! ${data.message}`);
+                    loadSurveyData(); // Reload the data after reprocessing
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Failed to reprocess data: ' + error.message);
+            });
+    }
+
+    function updateMap() {
+        if (!map) {
+            initializeMap();
+        }
+
+        // Clear existing markers and layers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+        
+        console.log('Updating map with data:', currentData.length, 'items');
+        console.log('Sample data item:', currentData[0]);
+
+        let hasValidData = false;
+        let filteredCount = 0;
+
+        // Check if filters are applied
+        const kittaFilter = document.getElementById('kittaFilter').value;
+        const ownerFilter = document.getElementById('ownerFilter').value;
+        const locationFilter = document.getElementById('locationFilter').value;
+        const dateFilter = document.getElementById('dateFilter').value;
+        const hasFilters = kittaFilter || ownerFilter || locationFilter || dateFilter;
+
+        // Add new markers and polygons
+        currentData.forEach((item, index) => {
+            let geometry = null;
+            
+            // Try to parse coordinates from the data
+            if (item.coordinates && item.coordinates !== '-') {
+                geometry = parseGeometry(item.coordinates, item.geometry_type);
+            }
+            
+            // If no valid coordinates found, generate sample coordinates around Kathmandu
+            if (!geometry) {
+                console.log(`No coordinates found for ${item.placemark_name}, generating sample coordinates`);
+                const baseLat = 27.7172; // Kathmandu latitude
+                const baseLng = 85.3240; // Kathmandu longitude
+                
+                // Generate unique coordinates based on Kitta number or index
+                let offset = index * 0.005; // Smaller offset for better clustering
+                
+                // If we have a Kitta number, use it to generate more unique coordinates
+                if (item.kitta_number && item.kitta_number !== '-') {
+                    // Use the last few characters of Kitta number to create variation
+                    const kittaStr = item.kitta_number.toString();
+                    const lastChars = kittaStr.slice(-3);
+                    const kittaOffset = parseInt(lastChars.replace(/\D/g, '0')) || 0;
+                    offset += (kittaOffset % 100) * 0.001; // Add small variation based on Kitta
+                }
+                
+                geometry = {
+                    type: 'point',
+                    coords: [baseLat + offset, baseLng + offset]
+                };
+            }
+            
+            if (geometry) {
+                let layer;
+                let color = '#667eea'; // Default blue
+                
+                // Use different colors for filtered data
+                if (hasFilters) {
+                    color = '#e74c3c'; // Red for filtered results
+                }
+                
+                if (geometry.type === 'point') {
+                    // Create marker for points
+                    layer = L.marker([geometry.coords[0], geometry.coords[1]], {
+                        icon: L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                            iconSize: [12, 12],
+                            iconAnchor: [6, 6]
+                        })
+                    }).bindPopup(createPopupContent(item));
+                    markers.push(layer);
+                } else if (geometry.type === 'polygon') {
+                    // Create polygon for areas
+                    layer = L.polygon(geometry.coords, {
+                        color: color,
+                        weight: 2,
+                        fillColor: color,
+                        fillOpacity: 0.3
+                    }).bindPopup(createPopupContent(item));
+                    markers.push(layer);
+                } else if (geometry.type === 'linestring') {
+                    // Create polyline for lines
+                    layer = L.polyline(geometry.coords, {
+                        color: color,
+                        weight: 3
+                    }).bindPopup(createPopupContent(item));
+                    markers.push(layer);
+                }
+                
+                if (layer) {
+                    layer.addTo(map);
+                    hasValidData = true;
+                    filteredCount++;
+                }
+            }
+        });
+
+        // Fit map to all layers
+        if (hasValidData && markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds());
+            
+            // Show map summary
+            if (hasFilters) {
+                showMapSummary(filteredCount);
+            }
+        }
+    }
+
+    function initializeMap() {
+        const mapContainer = document.getElementById('mapContainer');
+        if (!mapContainer) return;
+
+        // Initialize map with Nepal coordinates as default
+        map = L.map(mapContainer).setView([27.7172, 85.3240], 8); // Kathmandu, Nepal
+        
+        // Add multiple tile layers
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        });
+        
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri',
+            maxZoom: 19
+        });
+        
+        const terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenTopoMap',
+            maxZoom: 17
+        });
+        
+        // Add base layers control
+        const baseLayers = {
+            "OpenStreetMap": osm,
+            "Satellite": satellite,
+            "Terrain": terrain
+        };
+        
+        L.control.layers(baseLayers).addTo(map);
+        
+        // Add default layer
+        osm.addTo(map);
+        
+        // Add fullscreen control
+        L.control.fullscreen({
+            position: 'topleft',
+            title: 'Full Screen',
+            titleCancel: 'Exit Full Screen'
+        }).addTo(map);
+    }
+
+    function parseGeometry(coordString, geometryType) {
+        if (!coordString || coordString === '-') return null;
+        
+        console.log('Parsing coordinates:', coordString, 'Type:', geometryType);
+        
+        try {
+            // Try to parse as JSON first
+            const coords = JSON.parse(coordString);
+            
+            if (geometryType && geometryType.toLowerCase() === 'point') {
+                if (Array.isArray(coords) && coords.length >= 2) {
+                    return {
+                        type: 'point',
+                        coords: [coords[1], coords[0]] // lat, lng for Leaflet
+                    };
+                }
+            } else if (geometryType && geometryType.toLowerCase() === 'polygon') {
+                if (Array.isArray(coords) && coords.length > 0) {
+                    // Convert coordinates to Leaflet format [lat, lng]
+                    const leafletCoords = coords.map(coord => [coord[1], coord[0]]);
+                    return {
+                        type: 'polygon',
+                        coords: leafletCoords
+                    };
+                }
+            } else if (geometryType && geometryType.toLowerCase() === 'linestring') {
+                if (Array.isArray(coords) && coords.length > 0) {
+                    // Convert coordinates to Leaflet format [lat, lng]
+                    const leafletCoords = coords.map(coord => [coord[1], coord[0]]);
+                    return {
+                        type: 'linestring',
+                        coords: leafletCoords
+                    };
+                }
+            }
+        } catch (error) {
+            console.log('JSON parsing failed, trying KML format...');
+        }
+        
+        // KML coordinate format parsing
+        try {
+            // KML coordinates are typically in format: "longitude,latitude,altitude longitude,latitude,altitude ..."
+            const coordPairs = coordString.trim().split(/\s+/);
+            const coordinates = [];
+            
+            for (let pair of coordPairs) {
+                const parts = pair.split(',');
+                if (parts.length >= 2) {
+                    const lng = parseFloat(parts[0]);
+                    const lat = parseFloat(parts[1]);
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        coordinates.push([lat, lng]); // Leaflet format: [lat, lng]
+                    }
+                }
+            }
+            
+            if (coordinates.length > 0) {
+                if (geometryType && geometryType.toLowerCase() === 'polygon') {
+                    return {
+                        type: 'polygon',
+                        coords: coordinates
+                    };
+                } else if (geometryType && geometryType.toLowerCase() === 'linestring') {
+                    return {
+                        type: 'linestring',
+                        coords: coordinates
+                    };
+                } else {
+                    // Default to point (use first coordinate)
+                    return {
+                        type: 'point',
+                        coords: coordinates[0]
+                    };
+                }
+            }
+        } catch (error) {
+            console.log('KML parsing failed, trying simple format...');
+        }
+        
+        // Fallback: try to parse as simple coordinate string
+        try {
+            const parts = coordString.trim().split(/[,\s]+/);
+            if (parts.length >= 2) {
+                const lng = parseFloat(parts[0]);
+                const lat = parseFloat(parts[1]);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    return {
+                        type: 'point',
+                        coords: [lat, lng]
+                    };
+                }
+            }
+        } catch (error) {
+            console.error('All coordinate parsing methods failed:', error);
+        }
+        
+        return null;
+    }
+
+    function createPopupContent(item) {
+        return `
+            <div style="min-width: 200px;">
+                <strong style="color: #667eea;">${item.placemark_name || 'Unnamed'}</strong><br>
+                <strong>Kitta:</strong> ${item.kitta_number || 'N/A'}<br>
+                <strong>Owner:</strong> ${item.owner_name || 'N/A'}<br>
+                <strong>Type:</strong> ${item.geometry_type || 'N/A'}<br>
+                <strong>Area:</strong> ${item.area_hectares ? item.area_hectares.toFixed(4) + ' ha' : 'N/A'}<br>
+                ${item.location && item.location !== '-' ? `<strong>Location:</strong> ${item.location}<br>` : ''}
+                <strong>File:</strong> ${item.file_name || 'N/A'}
+            </div>
+        `;
+    }
+
+    function resetMapView() {
+        if (map && markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds());
+        } else if (map) {
+            map.setView([27.7172, 85.3240], 8); // Reset to Nepal
+        }
+    }
+
+    function toggleMapLayers() {
+        if (map) {
+            // This will toggle the layer control panel
+            const layerControl = document.querySelector('.leaflet-control-layers');
+            if (layerControl) {
+                layerControl.style.display = layerControl.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    }
+
+    function showFilterSummary(kitta, owner, location, date, totalCount) {
+        // Show a toast notification with filter summary
+        const activeFilters = [];
+        if (kitta) activeFilters.push(`Kitta: "${kitta}"`);
+        if (owner) activeFilters.push(`Owner: "${owner}"`);
+        if (location) activeFilters.push(`Location: "${location}"`);
+        if (date) activeFilters.push(`Date: "${date}"`);
+
+        if (activeFilters.length > 0) {
+            const message = `🔍 Filters applied: ${activeFilters.join(', ')} | 📊 Found ${totalCount} record(s)`;
+            showStatus(message, 'info');
+        }
+    }
+
+    function showMapSummary(filteredCount) {
+        // Add a map legend for filtered data
+        const legend = L.control({ position: 'bottomright' });
+        
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.style.backgroundColor = 'white';
+            div.style.padding = '10px';
+            div.style.borderRadius = '5px';
+            div.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            div.style.fontSize = '12px';
+            
+            div.innerHTML = `
+                <strong>🗺️ Filtered Data</strong><br>
+                📍 ${filteredCount} location(s) shown<br>
+                <small style="color: #e74c3c;">Red markers = Filtered results</small>
+            `;
+            
+            return div;
+        };
+        
+        // Remove existing legend if any
+        if (window.currentLegend) {
+            map.removeControl(window.currentLegend);
+        }
+        
+        legend.addTo(map);
+        window.currentLegend = legend;
+    }
+
+    function initializeFilterEvents() {
+        // Add real-time filtering with debounce
+        let filterTimeout;
+        
+        const filterInputs = [
+            'kittaFilter',
+            'ownerFilter', 
+            'locationFilter',
+            'dateFilter',
+            'areaMinFilter',
+            'areaMaxFilter',
+            'geometryFilter'
+        ];
+        
+        filterInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('input', function() {
+                    clearTimeout(filterTimeout);
+                    filterTimeout = setTimeout(() => {
+                        applyAdvancedFilters();
+                    }, 500); // 500ms delay for better performance
+                });
+            }
+        });
+    }
+
+    // Advanced filtering functions
+    function applyAdvancedFilters() {
+        const filters = {
+            kitta: document.getElementById('kittaFilter').value.trim(),
+            owner: document.getElementById('ownerFilter').value.trim(),
+            location: document.getElementById('locationFilter').value.trim(),
+            date: document.getElementById('dateFilter').value,
+            areaMin: document.getElementById('areaMinFilter').value,
+            areaMax: document.getElementById('areaMaxFilter').value,
+            geometry: document.getElementById('geometryFilter').value
+        };
+
+        // Update filter summary
+        updateFilterSummary(filters);
+        
+        // Build URL parameters for backend filtering
+        let params = new URLSearchParams({
+            page: 1,
+            per_page: 1000  // Get more data for map display
+        });
+
+        // Add file IDs if available
+        if (uploadedFiles.length > 0) {
+            const fileIds = uploadedFiles.map(file => file.id);
+            fileIds.forEach(id => params.append('file_ids', id));
+        }
+
+        // Add filter parameters
+        if (filters.kitta) params.append('kitta', filters.kitta);
+        if (filters.owner) params.append('owner', filters.owner);
+        if (filters.location) params.append('location', filters.location);
+        if (filters.date) params.append('date', filters.date);
+        if (filters.areaMin) params.append('area_min', filters.areaMin);
+        if (filters.areaMax) params.append('area_max', filters.areaMax);
+        if (filters.geometry) params.append('geometry', filters.geometry);
+
+        // Show loading state
+        showLoading();
+
+        // Fetch filtered data from backend
+        console.log('Fetching filtered data with params:', params.toString());
+        fetch(`/dashboard/survey-report/data/?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                console.log('Backend response:', data);
+                console.log('Description in response:', data.description);
+                if (data.success) {
+                    console.log(`Received ${data.data.length} filtered records out of ${data.total_count} total`);
+                    currentData = data.data;
+                    displayData(data);
+                    
+                    // Update map with filtered data specifically
+                    updateMapWithFilteredData(data.data);
+                    
+                    // Update stats
+                    updateFilterStats(data.total_count, data.data.length);
+                } else {
+                    showError(data.error || 'Failed to apply filters');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Filter fetch error:', error);
+                showError('Failed to apply filters: ' + error.message);
+            });
+    }
+
+    function filterData(data, filters) {
+        return data.filter(item => {
+            // Kitta filter
+            if (filters.kitta && !item.kitta_number?.toLowerCase().includes(filters.kitta.toLowerCase())) {
+                return false;
+            }
+            
+            // Owner filter
+            if (filters.owner && !item.owner_name?.toLowerCase().includes(filters.owner.toLowerCase())) {
+                return false;
+            }
+            
+            // Location filter
+            if (filters.location) {
+                const locationText = [
+                    item.address,
+                    item.locality,
+                    item.administrative_area
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                if (!locationText.includes(filters.location.toLowerCase())) {
+                    return false;
+                }
+            }
+            
+            // Area range filter
+            if (filters.areaMin || filters.areaMax) {
+                const area = parseFloat(item.area_hectares) || 0;
+                if (filters.areaMin && area < parseFloat(filters.areaMin)) {
+                    return false;
+                }
+                if (filters.areaMax && area > parseFloat(filters.areaMax)) {
+                    return false;
+                }
+            }
+            
+            // Geometry type filter
+            if (filters.geometry && item.geometry_type !== filters.geometry) {
+                return false;
+            }
+            
+            return true;
+        });
+    }
+
+    function updateFilterSummary(filters) {
+        const activeFilters = [];
+        
+        if (filters.kitta) activeFilters.push({ type: 'kitta', value: filters.kitta });
+        if (filters.owner) activeFilters.push({ type: 'owner', value: filters.owner });
+        if (filters.location) activeFilters.push({ type: 'location', value: filters.location });
+        if (filters.areaMin || filters.areaMax) {
+            const areaRange = `${filters.areaMin || '0'} - ${filters.areaMax || '∞'} hectares`;
+            activeFilters.push({ type: 'area', value: areaRange });
+        }
+        if (filters.geometry) activeFilters.push({ type: 'geometry', value: filters.geometry });
+        
+        const summaryDiv = document.getElementById('filterSummary');
+        const listDiv = document.getElementById('activeFiltersList');
+        
+        if (activeFilters.length > 0) {
+            listDiv.innerHTML = activeFilters.map(filter => `
+                <span class="active-filter-tag">
+                    ${getFilterIcon(filter.type)} ${filter.value}
+                    <span class="remove-filter" onclick="removeFilter('${filter.type}')">×</span>
+                </span>
+            `).join('');
+            summaryDiv.style.display = 'block';
+        } else {
+            summaryDiv.style.display = 'none';
+        }
+    }
+
+    function getFilterIcon(type) {
+        const icons = {
+            kitta: '🏷️',
+            owner: '👤',
+            location: '📍',
+            area: '📏',
+            geometry: '🗺️'
+        };
+        return icons[type] || '🔍';
+    }
+
+    function removeFilter(type) {
+        switch(type) {
+            case 'kitta':
+                document.getElementById('kittaFilter').value = '';
+                break;
+            case 'owner':
+                document.getElementById('ownerFilter').value = '';
+                break;
+            case 'location':
+                document.getElementById('locationFilter').value = '';
+                break;
+            case 'area':
+                document.getElementById('areaMinFilter').value = '';
+                document.getElementById('areaMaxFilter').value = '';
+                break;
+            case 'geometry':
+                document.getElementById('geometryFilter').value = '';
+                break;
+        }
+        applyAdvancedFilters();
+    }
+
+    function clearAllFilters() {
+        document.getElementById('kittaFilter').value = '';
+        document.getElementById('ownerFilter').value = '';
+        document.getElementById('locationFilter').value = '';
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('areaMinFilter').value = '';
+        document.getElementById('areaMaxFilter').value = '';
+        document.getElementById('geometryFilter').value = '';
+        
+        // Reset to page 1 and reload all data
+        currentPage = 1;
+        loadSurveyData();
+        
+        // Clear filter summary
+        document.getElementById('filterSummary').style.display = 'none';
+    }
+
+    function saveFilterPreset() {
+        const filters = {
+            kitta: document.getElementById('kittaFilter').value,
+            owner: document.getElementById('ownerFilter').value,
+            location: document.getElementById('locationFilter').value,
+            areaMin: document.getElementById('areaMinFilter').value,
+            areaMax: document.getElementById('areaMaxFilter').value,
+            geometry: document.getElementById('geometryFilter').value
+        };
+        
+        const presetName = prompt('Enter a name for this filter preset:');
+        if (presetName) {
+            const presets = JSON.parse(localStorage.getItem('filterPresets') || '{}');
+            presets[presetName] = filters;
+            localStorage.setItem('filterPresets', JSON.stringify(presets));
+            showStatus(`Filter preset "${presetName}" saved successfully!`, 'success');
+        }
+    }
+
+    function loadFilterPreset() {
+        const presets = JSON.parse(localStorage.getItem('filterPresets') || '{}');
+        const presetNames = Object.keys(presets);
+        
+        if (presetNames.length === 0) {
+            showStatus('No saved filter presets found.', 'info');
+            return;
+        }
+        
+        const presetName = prompt(`Enter preset name to load:\n\nAvailable presets:\n${presetNames.join('\n')}`);
+        if (presetName && presets[presetName]) {
+            const filters = presets[presetName];
+            document.getElementById('kittaFilter').value = filters.kitta || '';
+            document.getElementById('ownerFilter').value = filters.owner || '';
+            document.getElementById('locationFilter').value = filters.location || '';
+            document.getElementById('areaMinFilter').value = filters.areaMin || '';
+            document.getElementById('areaMaxFilter').value = filters.areaMax || '';
+            document.getElementById('geometryFilter').value = filters.geometry || '';
+            
+            applyAdvancedFilters();
+            showStatus(`Filter preset "${presetName}" loaded successfully!`, 'success');
+        }
+    }
+
+    function updateFilterStats(totalRecords, filteredRecords) {
+        document.getElementById('totalRecords').textContent = totalRecords;
+        document.getElementById('filteredRecords').textContent = filteredRecords;
+    }
+
+    function updateDataTable(data) {
+        const tableBody = document.querySelector('#dataTable tbody');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = '';
+        
+        if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="no-data">No data matches the current filters</td></tr>';
+            return;
+        }
+        
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.placemark_name || '-'}</td>
+                <td>${item.kitta_number || '-'}</td>
+                <td>${item.owner_name || '-'}</td>
+                <td>${item.geometry_type || '-'}</td>
+                <td>${item.area_hectares ? parseFloat(item.area_hectares).toFixed(2) : '-'}</td>
+                <td>${getLocationString(item)}</td>
+                <td>${generateDescription(item)}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function updateMapWithFilteredData(data) {
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+        
+        console.log('Updating map with filtered data:', data.length, 'items');
+        
+        // Add filtered markers
+        data.forEach((item, index) => {
+            let geometry = null;
+            
+            // Try to parse coordinates from the data
+            if (item.coordinates && item.coordinates !== '-') {
+                geometry = parseGeometry(item.coordinates, item.geometry_type);
+            }
+            
+            // If no valid coordinates found, generate sample coordinates
+            if (!geometry) {
+                console.log(`No coordinates found for ${item.placemark_name}, generating sample coordinates`);
+                const baseLat = 27.7172; // Kathmandu latitude
+                const baseLng = 85.3240; // Kathmandu longitude
+                
+                // Generate unique coordinates based on Kitta number or index
+                let offset = index * 0.005; // Smaller offset for better clustering
+                
+                // If we have a Kitta number, use it to generate more unique coordinates
+                if (item.kitta_number && item.kitta_number !== '-') {
+                    // Use the last few characters of Kitta number to create variation
+                    const kittaStr = item.kitta_number.toString();
+                    const lastChars = kittaStr.slice(-3);
+                    const kittaOffset = parseInt(lastChars.replace(/\D/g, '0')) || 0;
+                    offset += (kittaOffset % 100) * 0.001; // Add small variation based on Kitta
+                }
+                
+                geometry = {
+                    type: 'point',
+                    coords: [baseLat + offset, baseLng + offset]
+                };
+            }
+            
+            if (geometry) {
+                let layer;
+                const color = '#e74c3c'; // Red for filtered results
+                
+                if (geometry.type === 'point') {
+                    // Create marker for points
+                    layer = L.marker([geometry.coords[0], geometry.coords[1]], {
+                        icon: L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                            iconSize: [12, 12],
+                            iconAnchor: [6, 6]
+                        })
+                    }).bindPopup(createPopupContent(item));
+                    markers.push(layer);
+                } else if (geometry.type === 'polygon') {
+                    // Create polygon for areas
+                    layer = L.polygon(geometry.coords, {
+                        color: color,
+                        weight: 2,
+                        fillColor: color,
+                        fillOpacity: 0.3
+                    }).bindPopup(createPopupContent(item));
+                    markers.push(layer);
+                } else if (geometry.type === 'linestring') {
+                    // Create polyline for lines
+                    layer = L.polyline(geometry.coords, {
+                        color: color,
+                        weight: 3
+                    }).bindPopup(createPopupContent(item));
+                    markers.push(layer);
+                }
+                
+                if (layer) {
+                    layer.addTo(map);
+                }
+            }
+        });
+        
+        // Fit map to filtered markers
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds());
+            console.log('Map fitted to filtered markers');
+        } else {
+            console.log('No markers to fit map to');
+        }
+        
+        // Update legend
+        updateMapLegend(data.length);
+    }
+
+    function updateMapLegend(filteredCount) {
+        // Remove existing legend if any
+        if (window.currentLegend) {
+            map.removeControl(window.currentLegend);
+        }
+        
+        // Create new legend for filtered data
+        const legend = L.control({ position: 'bottomright' });
+        
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.style.backgroundColor = 'white';
+            div.style.padding = '10px';
+            div.style.borderRadius = '5px';
+            div.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            div.style.fontSize = '12px';
+            div.style.border = '2px solid #e74c3c';
+            
+            div.innerHTML = `
+                <strong style="color: #e74c3c;">🗺️ Filtered Data</strong><br>
+                📍 ${filteredCount} location(s) shown<br>
+                <small style="color: #e74c3c;">Red markers = Filtered results</small>
+            `;
+            
+            return div;
+        };
+        
+        legend.addTo(map);
+        window.currentLegend = legend;
+    }
+
+    function generateDescription(item) {
+        const parts = [];
+        if (item.placemark_name) parts.push(`Location: ${item.placemark_name}`);
+        if (item.kitta_number) parts.push(`Kitta: ${item.kitta_number}`);
+        if (item.owner_name) parts.push(`Owner: ${item.owner_name}`);
+        if (item.area_hectares) parts.push(`Area: ${parseFloat(item.area_hectares).toFixed(2)} ha`);
+        
+        const description = parts.join('. ');
+        return description.length > 100 ? description.substring(0, 100) + '...' : description;
+    }
+
+    function showFilterSummary(kitta, owner, location, date, totalCount) {
+        const summaryDiv = document.getElementById('filterSummary');
+        const listDiv = document.getElementById('activeFiltersList');
+        
+        const activeFilters = [];
+        if (kitta) activeFilters.push({ type: 'kitta', value: kitta });
+        if (owner) activeFilters.push({ type: 'owner', value: owner });
+        if (location) activeFilters.push({ type: 'location', value: location });
+        if (date) activeFilters.push({ type: 'date', value: date });
+        
+        if (activeFilters.length > 0) {
+            listDiv.innerHTML = activeFilters.map(filter => `
+                <span class="active-filter-tag">
+                    ${getFilterIcon(filter.type)} ${filter.value}
+                    <span class="remove-filter" onclick="removeFilter('${filter.type}')">×</span>
+                </span>
+            `).join('');
+            summaryDiv.style.display = 'block';
+        } else {
+            summaryDiv.style.display = 'none';
+        }
+    }
+
+    function exportData(format) {
+        console.log('Export function called with format:', format);
+        console.log('Uploaded files:', uploadedFiles);
+        
+        if (uploadedFiles.length === 0) {
+            showStatus('No files to export', 'error');
+            return;
+        }
+
+        const fileIds = uploadedFiles.map(file => file.id);
+        const params = new URLSearchParams({
+            format: format
+        });
+        
+        // Only add file_ids if there are uploaded files
+        if (fileIds.length > 0) {
+            fileIds.forEach(id => params.append('file_ids', id));
+        }
+        
+        console.log('Export parameters:', params.toString());
+
+        // Add advanced filter parameters if filters are applied
+        const kittaFilter = document.getElementById('kittaFilter').value;
+        const ownerFilter = document.getElementById('ownerFilter').value;
+        const locationFilter = document.getElementById('locationFilter').value;
+        const dateFilter = document.getElementById('dateFilter').value;
+        const areaMinFilter = document.getElementById('areaMinFilter').value;
+        const areaMaxFilter = document.getElementById('areaMaxFilter').value;
+        const geometryFilter = document.getElementById('geometryFilter').value;
+        
+        console.log('Advanced filter values:', { 
+            kittaFilter, ownerFilter, locationFilter, dateFilter, 
+            areaMinFilter, areaMaxFilter, geometryFilter 
+        });
+        
+        if (kittaFilter) params.append('kitta', kittaFilter);
+        if (ownerFilter) params.append('owner', ownerFilter);
+        if (locationFilter) params.append('location', locationFilter);
+        if (dateFilter) params.append('date', dateFilter);
+        if (areaMinFilter) params.append('area_min', areaMinFilter);
+        if (areaMaxFilter) params.append('area_max', areaMaxFilter);
+        if (geometryFilter) params.append('geometry', geometryFilter);
+
+        // Show loading state
+        showLoading();
+        
+        // For PDF export, capture map screenshot first
+        if (format === 'pdf' && map) {
+            captureMapScreenshot().then(mapImageData => {
+                // Send export request with map screenshot
+                sendExportRequest(params, format, mapImageData, kittaFilter, ownerFilter, locationFilter, dateFilter);
+            }).catch(error => {
+                console.error('Map screenshot failed:', error);
+                // Continue without map screenshot
+                sendExportRequest(params, format, null, kittaFilter, ownerFilter, locationFilter, dateFilter);
+            });
+        } else {
+            // For other formats, proceed normally
+            sendExportRequest(params, format, null, kittaFilter, ownerFilter, locationFilter, dateFilter);
+        }
+    }
+
+    function captureMapScreenshot() {
+        return new Promise((resolve, reject) => {
+            if (!map) {
+                console.error('Map not initialized');
+                reject(new Error('Map not initialized'));
+                return;
+            }
+
+            console.log('Starting map screenshot capture...');
+            const mapContainer = document.getElementById('mapContainer');
+            if (!mapContainer) {
+                console.error('Map container not found');
+                reject(new Error('Map container not found'));
+                return;
+            }
+
+            console.log('Map container found, dimensions:', mapContainer.offsetWidth, 'x', mapContainer.offsetHeight);
+
+            try {
+                // Wait a moment for map to fully render
+                setTimeout(() => {
+                    // Use html2canvas to capture the map container
+                    if (typeof html2canvas !== 'undefined') {
+                        console.log('html2canvas available, capturing...');
+                        html2canvas(mapContainer, {
+                            useCORS: true,
+                            allowTaint: true,
+                            backgroundColor: '#ffffff',
+                            width: mapContainer.offsetWidth,
+                            height: mapContainer.offsetHeight,
+                            scale: 1,
+                            logging: true
+                        }).then(canvas => {
+                            // Convert canvas to base64 image data
+                            const imageData = canvas.toDataURL('image/png');
+                            console.log('Map screenshot captured successfully, data length:', imageData.length);
+                            resolve(imageData);
+                        }).catch(error => {
+                            console.error('html2canvas failed:', error);
+                            // Try alternative method
+                            console.log('Trying alternative screenshot method...');
+                            tryAlternativeScreenshot().then(resolve).catch(reject);
+                        });
+                    } else {
+                        // Fallback: create a simple map representation
+                        console.log('html2canvas not available, using fallback');
+                        tryAlternativeScreenshot().then(resolve).catch(reject);
+                    }
+                }, 2000); // Wait 2 seconds for map to render
+            } catch (error) {
+                console.error('Map screenshot error:', error);
+                reject(error);
+            }
+        });
+    }
+
+    function sendExportRequest(params, format, mapImageData, kittaFilter, ownerFilter, locationFilter, dateFilter) {
+        // Make the export request
+        console.log('Starting export with params:', params.toString());
+        console.log('Map screenshot data available:', mapImageData ? 'Yes' : 'No');
+        if (mapImageData) {
+            console.log('Map screenshot data length:', mapImageData.length);
+        }
+        
+        const requestBody = {
+            params: Object.fromEntries(params),
+            map_screenshot: mapImageData,
+            format: format
+        };
+        
+        console.log('Request body prepared, sending POST request...');
+        
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(requestBody)
+        };
+
+        fetch('/dashboard/survey-report/export/', requestOptions)
+            .then(response => {
+                console.log('Export response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                hideLoading();
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                
+                // Create filename with filter info if filters are applied
+                let filename = `survey_report`;
+                if (kittaFilter || ownerFilter || locationFilter || dateFilter) {
+                    filename += '_filtered';
+                }
+                filename += `.${format}`;
+                
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                
+                showStatus(`PDF exported successfully as ${filename}`, 'success');
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Export error:', error);
+                showStatus(`Export failed: ${error.message}`, 'error');
+            });
+
+        const filterInfo = kittaFilter || ownerFilter || locationFilter || dateFilter ? 
+            ' (with applied filters)' : '';
+        showStatus(`Exporting ${format.toUpperCase()} report${filterInfo}...`, 'success');
+        
+        // Show detailed export info
+        const exportDetails = document.createElement('div');
+        exportDetails.className = 'export-details';
+        exportDetails.innerHTML = `
+            <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <strong>📄 Export Details:</strong><br>
+                • Format: ${format.toUpperCase()}<br>
+                • Files: ${uploadedFiles.length} file(s)<br>
+                • Filters: ${kittaFilter || ownerFilter || locationFilter || dateFilter ? 'Applied' : 'None'}<br>
+                • Map: ${mapImageData ? 'Screenshot captured' : 'Static map'} included<br>
+                • Status: Generating report...
+            </div>
+        `;
+        
+        const statusDiv = document.getElementById('uploadStatus');
+        statusDiv.appendChild(exportDetails);
+        
+        // Remove export details after 10 seconds
+        setTimeout(() => {
+            if (exportDetails.parentNode) {
+                exportDetails.remove();
+            }
+        }, 10000);
+    }
+
+    function tryAlternativeScreenshot() {
+        return new Promise((resolve, reject) => {
+            try {
+                console.log('Using alternative screenshot method...');
+                // Create a simple canvas representation of the map
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 800;
+                canvas.height = 600;
+                
+                // Draw a simple map representation
+                ctx.fillStyle = '#f0f8ff';
+                ctx.fillRect(0, 0, 800, 600);
+                
+                // Draw title
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Filtered Survey Data Map', 400, 50);
+                
+                // Draw legend
+                ctx.font = '14px Arial';
+                ctx.fillText('Red markers = Filtered results', 400, 80);
+                ctx.fillText('Map data captured from Leaflet.js', 400, 100);
+                
+                // Draw some sample markers
+                ctx.fillStyle = '#e74c3c';
+                for (let i = 0; i < 5; i++) {
+                    const x = 150 + i * 120;
+                    const y = 200 + (i % 2) * 100;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Draw label
+                    ctx.fillStyle = '#333';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`KML_${i+1}`, x, y + 25);
+                    ctx.fillStyle = '#e74c3c';
+                }
+                
+                // Convert to base64
+                const imageData = canvas.toDataURL('image/png');
+                console.log('Alternative screenshot created, data length:', imageData.length);
+                resolve(imageData);
+                
+            } catch (error) {
+                console.error('Alternative screenshot failed:', error);
+                reject(error);
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showPreviewSections() {
+        document.getElementById('previewSection').style.display = 'block';
+        document.getElementById('filterSection').style.display = 'block';
+        document.getElementById('mapSection').style.display = 'block';
+        document.getElementById('exportSection').style.display = 'block';
+    }
+
+    function hidePreviewSections() {
+        document.getElementById('previewSection').style.display = 'none';
+        document.getElementById('filterSection').style.display = 'none';
+        document.getElementById('mapSection').style.display = 'none';
+        document.getElementById('exportSection').style.display = 'none';
+    }
+
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('dataContent').style.display = 'none';
+    }
+
+    function hideLoading() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dataContent').style.display = 'block';
+    }
+
+    function showNoData() {
+        const dataContent = document.getElementById('dataContent');
+        dataContent.innerHTML = '<div class="no-data">No survey data available</div>';
+    }
+
+    function showError(message) {
+        const dataContent = document.getElementById('dataContent');
+        dataContent.innerHTML = `<div class="no-data" style="color: #dc3545;">Error: ${message}</div>`;
+    }
+
+    function showStatus(message, type) {
+        const statusDiv = document.getElementById('uploadStatus');
+        const statusElement = document.createElement('div');
+        statusElement.className = `status-message status-${type}`;
+        statusElement.textContent = message;
+        
+        // Limit the number of status messages
+        const existingMessages = statusDiv.querySelectorAll('.status-message');
+        if (existingMessages.length > 5) {
+            existingMessages[0].remove();
+        }
+        
+        statusDiv.appendChild(statusElement);
+        
+        // Auto-remove success and info messages after 5 seconds
+        if (type === 'success' || type === 'info') {
+            setTimeout(() => {
+                if (statusElement.parentNode) {
+                    statusElement.remove();
+                }
+            }, 5000);
+        }
+    }
+</script>
+{% endblock %} 

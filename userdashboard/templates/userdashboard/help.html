@@ -1,0 +1,578 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}Help & Support - GeoSurvey{% endblock %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Gradient background and glassmorphism for main container */
+    body, .help-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 15%, #f093fb 30%, #f5576c 45%, #4facfe 60%, #43e97b 75%, #38f9d7 90%, #667eea 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 20s ease infinite;
+    }
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    .help-container {
+        max-width: 1200px;
+        margin: 40px auto 40px auto;
+        padding: 40px 24px;
+        background: rgba(255,255,255,0.92);
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(102,126,234,0.10), 0 2px 8px rgba(76,175,254,0.08);
+        backdrop-filter: blur(12px);
+        animation: fadeInUp 1s cubic-bezier(.23,1.01,.32,1) both;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .section-block {
+        background: rgba(255,255,255,0.98);
+        border-radius: 16px;
+        padding: 32px 24px;
+        margin-bottom: 36px;
+        box-shadow: 0 4px 24px rgba(102,126,234,0.07);
+        border: 1px solid rgba(102,126,234,0.08);
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.7s cubic-bezier(.23,1.01,.32,1);
+    }
+    .section-block.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .help-header {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+    .help-header h1 {
+        font-size: 3.2rem;
+        font-weight: 900;
+        background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientText 3s ease infinite;
+        display: inline-block;
+        margin-bottom: 12px;
+    }
+    @keyframes gradientText {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    .help-header p {
+        font-size: 1.2rem;
+        color: #444;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 28px;
+        border-bottom: 3px solid #764ba2;
+        padding-bottom: 8px;
+        display: inline-block;
+        letter-spacing: 1px;
+    }
+    /* How to Use Cards */
+    .how-to-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 28px;
+    }
+    .how-to-card {
+        background: linear-gradient(120deg, #f093fb 0%, #f5576c 100%);
+        color: #fff;
+        border-radius: 14px;
+        padding: 28px 18px;
+        box-shadow: 0 4px 18px rgba(102,126,234,0.10);
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.18);
+        transition: transform 0.3s, box-shadow 0.3s;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    .how-to-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 8px 32px rgba(102,126,234,0.18);
+        background: linear-gradient(120deg, #667eea 0%, #43e97b 100%);
+    }
+    .how-to-card .icon {
+        font-size: 2.7rem;
+        margin-bottom: 12px;
+        display: block;
+        filter: drop-shadow(0 2px 8px rgba(102,126,234,0.12));
+        animation: iconPop 1.2s infinite alternate;
+    }
+    @keyframes iconPop {
+        from { transform: scale(1); }
+        to { transform: scale(1.12); }
+    }
+    .how-to-card h4 {
+        font-size: 1.25rem;
+        margin-bottom: 8px;
+        color: #fff;
+        font-weight: 700;
+    }
+    .how-to-card p {
+        font-size: 1rem;
+        color: #f8f8f8;
+        line-height: 1.6;
+    }
+    /* FAQ Section */
+    .faq-search {
+        margin-bottom: 18px;
+    }
+    .faq-search .form-control {
+        border-radius: 8px;
+        border: 1px solid #764ba2;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(102,126,234,0.07);
+    }
+    .accordion-item {
+        background: #fff;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(102,126,234,0.04);
+        transition: box-shadow 0.3s;
+    }
+    .accordion-header {
+        background: linear-gradient(90deg, #667eea 0%, #f093fb 100%);
+        color: #fff;
+        padding: 18px 25px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+    .accordion-header:hover {
+        background: linear-gradient(90deg, #764ba2 0%, #43e97b 100%);
+    }
+    .accordion-header .arrow {
+        font-size: 1.2rem;
+        transition: transform 0.3s;
+    }
+    .accordion-header.active .arrow {
+        transform: rotate(90deg);
+    }
+    .accordion-content {
+        padding: 15px 25px;
+        background: #fff;
+        border-top: 1px solid #eee;
+        display: none;
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.6;
+    }
+    /* Video Section */
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 28px;
+    }
+    .video-card {
+        background: linear-gradient(120deg, #4facfe 0%, #38f9d7 100%);
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(102,126,234,0.10);
+        overflow: hidden;
+        border: 1px solid #eee;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .video-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 8px 32px rgba(102,126,234,0.18);
+    }
+    .video-placeholder {
+        width: 100%;
+        height: 200px;
+        background: rgba(255,255,255,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #888;
+        position: relative;
+    }
+    .video-placeholder::before {
+        content: '▶️';
+        font-size: 3rem;
+        color: rgba(102,126,234,0.25);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    .video-info {
+        padding: 20px;
+    }
+    .video-info h5 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: #fff;
+        font-weight: 700;
+    }
+    .video-info p {
+        font-size: 0.95rem;
+        color: #f8f8f8;
+        line-height: 1.5;
+    }
+    .video-info .duration {
+        font-size: 0.85rem;
+        color: #e0e0e0;
+        margin-top: 10px;
+        display: block;
+    }
+    /* Troubleshooting Tips */
+    .tip-card {
+        background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        border-left: 5px solid #4facfe;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 3px 10px rgba(102,126,234,0.05);
+        color: #fff;
+        transition: box-shadow 0.3s;
+    }
+    .tip-card h4 {
+        color: #fff;
+        margin-bottom: 10px;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+    .tip-card p {
+        color: #f8f8f8;
+        line-height: 1.6;
+    }
+    /* Contact Form */
+    .contact-form .form-group {
+        margin-bottom: 20px;
+    }
+    .contact-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #444;
+    }
+    .contact-form input[type="text"],
+    .contact-form input[type="email"],
+    .contact-form select,
+    .contact-form textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .contact-form input[type="text"]:focus,
+    .contact-form input[type="email"]:focus,
+    .contact-form select:focus,
+    .contact-form textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.18);
+        outline: none;
+    }
+    .contact-form textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    .contact-form button {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102,126,234,0.18);
+    }
+    .contact-form button:hover {
+        transform: translateY(-3px) scale(1.04);
+        box-shadow: 0 6px 20px rgba(102,126,234,0.22);
+        background: linear-gradient(45deg, #43e97b, #38f9d7);
+    }
+    /* Contact/Activity History */
+    .contact-history, .activity-history {
+        background: rgba(255,255,255,0.98);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(102,126,234,0.05);
+        border: 1px solid rgba(255,255,255,0.3);
+        margin-top: 18px;
+    }
+    .contact-history h5, .activity-history h5 {
+        color: #667eea;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .activity-list, .contact-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .activity-list li, .contact-list li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        color: #444;
+        font-size: 1rem;
+        transition: background 0.2s;
+    }
+    .activity-list li:last-child, .contact-list li:last-child {
+        border-bottom: none;
+    }
+    .activity-list li:hover, .contact-list li:hover {
+        background: rgba(102,126,234,0.07);
+    }
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+        .help-container { padding: 18px 4px; }
+        .section-block { padding: 18px 8px; }
+        .how-to-grid, .video-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="help-container">
+    <header class="help-header">
+        <h1>Help & Support</h1>
+        <p>Welcome to the GeoSurvey Help Center! Here you'll find guides, FAQs, and troubleshooting tips to help you make the most of our geospatial dashboard. If you can't find what you're looking for, feel free to contact us.</p>
+    </header>
+
+    <section class="section-block animated-section">
+        <h2 class="section-title">How to Use the Dashboard</h2>
+        <div class="how-to-grid">
+            <div class="how-to-card">
+                <span class="icon">⬆️</span>
+                <h4>Upload KML Files</h4>
+                <p>Navigate to the "Uploads" section. Click on "Upload KML" and select your .kml file. Once uploaded, you can preview the geographic features on a map and in a table.</p>
+            </div>
+            <div class="how-to-card">
+                <span class="icon">📊</span>
+                <h4>Upload CSV Files</h4>
+                <p>In the "Uploads" section, choose "Upload CSV". Ensure your CSV contains coordinate columns (e.g., 'latitude', 'longitude', or 'coordinates') for map visualization. The system will attempt to detect them automatically.</p>
+            </div>
+            <div class="how-to-card">
+                <span class="icon">📦</span>
+                <h4>Convert to Shapefile</h4>
+                <p>After uploading a CSV file with valid coordinates, you can convert it to a Shapefile directly from the CSV preview page. This allows for more advanced geospatial analysis and sharing.</p>
+            </div>
+            <div class="how-to-card">
+                <span class="icon">🗺️</span>
+                <h4>View Maps & Data</h4>
+                <p>All uploaded and converted files can be viewed in detail. The preview pages offer interactive maps, searchable data tables, and options to export your data in various formats.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block animated-section">
+        <h2 class="section-title">Frequently Asked Questions (FAQ)</h2>
+        <div class="faq-search mb-4">
+            <div class="input-group">
+                <span class="input-group-text">🔍</span>
+                <input type="text" class="form-control" id="faqSearch" placeholder="Search FAQ topics...">
+            </div>
+        </div>
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+                <div class="accordion-header">What file formats are supported?<span class="arrow">▶</span></div>
+                <div class="accordion-content">We currently support KML (.kml), CSV (.csv), and Shapefile (.shp, .shx, .dbf, etc. as a .zip archive) for upload and visualization. You can also export CSV data to Shapefile.</div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">Why is my map not loading?<span class="arrow">▶</span></div>
+                <div class="accordion-content">Map loading issues can be due to several reasons:
+                    <ul>
+                        <li><strong>Invalid Coordinates:</strong> Ensure your CSV or KML file contains valid and correctly formatted geographic coordinates (latitude, longitude).</li>
+                        <li><strong>Network Issues:</strong> Check your internet connection.</li>
+                        <li><strong>Server Error:</strong> If the problem persists, there might be a server-side issue. Please try again later or contact support.</li>
+                        <li><strong>Browser Compatibility:</strong> Ensure you are using a modern web browser.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">How do I fix shapefile errors?<span class="arrow">▶</span></div>
+                <div class="accordion-content">If you encounter errors with shapefiles:
+                    <ul>
+                        <li><strong>Missing Components:</strong> A shapefile consists of multiple files (.shp, .shx, .dbf, etc.). Ensure all required files are present and zipped together before uploading.</li>
+                        <li><strong>Invalid Geometry:</strong> Verify that the geometries (points, lines, polygons) in your data are correctly formed.</li>
+                        <li><strong>Projection Issues:</strong> While our system primarily uses WGS84 (EPSG:4326), ensure your data's projection is compatible or correctly transformed.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">Can I export my data?<span class="arrow">▶</span></div>
+                <div class="accordion-content">Yes, you can export your processed CSV data as a Shapefile. We are continuously working to add more export formats in the future.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block animated-section">
+        <h2 class="section-title">Tutorial Videos</h2>
+        <div class="video-grid">
+            <div class="video-card">
+                <div class="video-placeholder">Video 1</div>
+                <div class="video-info">
+                    <h5>Getting Started with GeoSurvey</h5>
+                    <p>A quick introduction to the dashboard interface and basic functionalities.</p>
+                    <span class="duration">Duration: 5:30</span>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="video-placeholder">Video 2</div>
+                <div class="video-info">
+                    <h5>Uploading and Viewing KML Data</h5>
+                    <p>Learn how to upload your KML files and explore them on the interactive map.</p>
+                    <span class="duration">Duration: 7:15</span>
+                </div>
+            </div>
+            <div class="video-card">
+                <div class="video-placeholder">Video 3</div>
+                <div class="video-info">
+                    <h5>CSV to Shapefile Conversion Guide</h5>
+                    <p>Detailed steps on converting your CSV data into a standard Shapefile format.</p>
+                    <span class="duration">Duration: 9:00</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block animated-section">
+        <h2 class="section-title">Troubleshooting Tips</h2>
+        <div class="troubleshooting-tips">
+            <div class="tip-card">
+                <h4>Common Issue: Data not appearing in table</h4>
+                <p><strong>Solution:</strong> Ensure your CSV file has a header row. If using KML, verify that placemark names and descriptions are present. Check the browser console for any JavaScript errors.</p>
+            </div>
+            <div class="tip-card">
+                <h4>Common Issue: Slow performance on map</h4>
+                <p><strong>Solution:</strong> For very large datasets, map rendering can be slow. Try filtering your data or zooming in to a specific area. Ensure your browser is up-to-date.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-block animated-section">
+        <h2 class="section-title">Contact & Feedback</h2>
+        <p class="text-center" style="margin-bottom: 25px; color: #555;">Have a question or feedback? We'd love to hear from you!</p>
+        <form class="contact-form" id="contactForm" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="contactName">Your Name</label>
+                <input type="text" id="contactName" name="contactName" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group">
+                <label for="contactEmail">Your Email</label>
+                <input type="email" id="contactEmail" name="contactEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="contactSubject">Subject</label>
+                <select id="contactSubject" name="contactSubject">
+                    <option value="general">General Inquiry</option>
+                    <option value="technical">Technical Support</option>
+                    <option value="feedback">Feedback / Suggestion</option>
+                    <option value="bug">Bug Report</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="contactMessage">Your Message</label>
+                <textarea id="contactMessage" name="contactMessage" placeholder="Type your message here..." required></textarea>
+            </div>
+            <button type="submit">Send Message</button>
+            {% if contact_msg %}
+                <div class="alert alert-{% if contact_status == 'success' %}success{% else %}danger{% endif %} mt-3" role="alert">
+                    {{ contact_msg }}
+                </div>
+            {% endif %}
+        </form>
+        {% if contact_history %}
+            <div class="contact-history mt-4">
+                <h5 class="mb-3"><span class="history-icon">📨</span> Your Recent Contact Submissions</h5>
+                <ul class="contact-list">
+                    {% for contact in contact_history %}
+                        <li>
+                            <strong>{{ contact.subject|title }}</strong> — {{ contact.message|truncatechars:60 }}<br>
+                            <span style="font-size:0.95em;color:#888;">{{ contact.submitted_at|date:"M d, Y H:i" }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% if recent_activities %}
+            <div class="activity-history mt-4">
+                <h5 class="mb-3"><span class="history-icon">🕑</span> Your Recent Activity History</h5>
+                <ul class="activity-list">
+                    {% for activity in recent_activities %}
+                        <li>{{ activity }}</li>
+                    {% empty %}
+                        <li>No recent activity.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+    // Animate section reveal on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const animatedSections = document.querySelectorAll('.animated-section');
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        animatedSections.forEach(section => observer.observe(section));
+
+        // Accordion functionality
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                header.classList.toggle('active');
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                } else {
+                    content.style.display = 'block';
+                }
+            });
+        });
+        // FAQ search
+        const faqSearch = document.getElementById('faqSearch');
+        if (faqSearch) {
+            faqSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                document.querySelectorAll('.accordion-item').forEach(item => {
+                    const header = item.querySelector('.accordion-header');
+                    const content = item.querySelector('.accordion-content');
+                    if (header.textContent.toLowerCase().includes(query) || content.textContent.toLowerCase().includes(query)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock content %} 

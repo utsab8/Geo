@@ -1,0 +1,65 @@
+/* KML Preview Page Styles */
+.kml-preview-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px 80px 20px;
+    position: relative;
+    z-index: 1;
+}
+.kml-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.kml-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+    position: relative;
+    overflow: hidden;
+}
+.kml-map-container {
+    height: 400px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 2px solid #e2e8f0;
+    overflow: hidden;
+}
+.kml-table-container {
+    overflow-x: auto;
+    margin-bottom: 30px;
+}
+.kml-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f8f9fa;
+}
+.kml-table th, .kml-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+.kml-table th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+.kml-table tr:hover {
+    background: #e9ecef;
+}
+.kml-export-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-right: 12px;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+}
+.kml-export-btn:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+} 

@@ -1,0 +1,120 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}CSS Test - GeoSurvey{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+    <h1 style="color: white; font-size: 2rem; text-align: center; margin-bottom: 2rem;">CSS Fix Test - GeoSurvey</h1>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <h2 style="color: white; text-align: center; margin-bottom: 2rem;">CSS Status Check</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; background: #28a745; animation: pulse 2s infinite;"></span>
+                    Background Gradient
+                </h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">If you see a purple gradient background, the main CSS is loading correctly.</p>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; background: #28a745; animation: pulse 2s infinite;"></span>
+                    Glass Morphism
+                </h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">If you see transparent cards with blur effects, the modern CSS is working.</p>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; background: #28a745; animation: pulse 2s infinite;"></span>
+                    Typography
+                </h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">If you see clean, modern fonts, the Inter font is loading properly.</p>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">
+                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; background: #28a745; animation: pulse 2s infinite;"></span>
+                    Animations
+                </h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">If you see smooth hover effects and animations, CSS transitions are working.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <h2 style="color: white; text-align: center; margin-bottom: 2rem;">Navigation Test</h2>
+        
+        <div style="text-align: center;">
+            <a href="{% url 'user_dashboard' %}" style="
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 12px;
+                text-decoration: none;
+                font-weight: 600;
+                display: inline-block;
+                margin: 0 1rem;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                Go to Dashboard
+            </a>
+            
+            <a href="{% url 'profile' %}" style="
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 12px;
+                text-decoration: none;
+                font-weight: 600;
+                display: inline-block;
+                margin: 0 1rem;
+                transition: all 0.3s ease;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            " onmouseover="this.style.transform='translateY(-3px)'; this.style.background='rgba(255, 255, 255, 0.3)'" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255, 255, 255, 0.2)'">
+                Go to Profile
+            </a>
+        </div>
+    </div>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <h2 style="color: white; text-align: center; margin-bottom: 2rem;">CSS Features Test</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">Backdrop Filter</h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">This card should have a blur effect behind it, creating a glass-like appearance.</p>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">Hover Effects</h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">Hover over this card to see smooth animations and color changes.</p>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">Gradients</h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">The background should show a beautiful purple gradient from top to bottom.</p>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border-radius: 16px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                <h3 style="color: white; margin-bottom: 1rem;">Shadows</h3>
+                <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">Cards should have subtle shadows that create depth and modern appearance.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %} 

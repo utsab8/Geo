@@ -1,0 +1,47 @@
+/* KML Upload Page Styles */
+.kml-upload-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px 80px 20px;
+    position: relative;
+    z-index: 1;
+}
+.upload-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.upload-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+    position: relative;
+    overflow: hidden;
+}
+.drop-zone {
+    border: 3px dashed #667eea;
+    border-radius: 15px;
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    margin-bottom: 30px;
+    cursor: pointer;
+}
+.upload-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+.upload-btn:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+} 

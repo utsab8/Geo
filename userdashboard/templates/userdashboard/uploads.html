@@ -1,0 +1,350 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}Uploads - GeoSurvey{% endblock %}
+
+{% block content %}
+<style>
+    .uploads-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .uploads-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .uploads-header h1 {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        animation: gradientText 3s ease-in-out infinite;
+    }
+
+    .uploads-header p {
+        color: #666;
+        font-size: 1.2rem;
+        margin: 0;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .upload-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .upload-option {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-option:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .upload-option::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-color) 0%, var(--accent-color-secondary) 100%);
+    }
+
+    .upload-option.kml {
+        --accent-color: #FF6B6B;
+        --accent-color-secondary: #FF8E53;
+    }
+
+    .upload-option.csv {
+        --accent-color: #4ECDC4;
+        --accent-color-secondary: #44A08D;
+    }
+
+    .upload-option.shapefile {
+        --accent-color: #A8E6CF;
+        --accent-color-secondary: #7FCDCD;
+    }
+
+    .upload-option.comprehensive {
+        --accent-color: #667eea;
+        --accent-color-secondary: #764ba2;
+    }
+
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color-secondary) 100%);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .upload-option:hover .upload-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .upload-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .upload-description {
+        color: #666;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .upload-features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem 0;
+        text-align: left;
+    }
+
+    .upload-features li {
+        padding: 0.5rem 0;
+        color: #555;
+        font-size: 0.9rem;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+
+    .upload-features li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--accent-color);
+        font-weight: bold;
+    }
+
+    .upload-btn {
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color-secondary) 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+
+    .comprehensive-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .stats-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 15px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @keyframes gradientText {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 768px) {
+        .uploads-container {
+            padding: 1rem;
+        }
+
+        .uploads-header h1 {
+            font-size: 2rem;
+        }
+
+        .upload-options {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="uploads-container">
+    <div class="uploads-header">
+        <h1>Upload Survey Data</h1>
+        <p>Choose your preferred upload method. All files are automatically validated, processed, and made available for preview and export.</p>
+    </div>
+
+    <div class="upload-options">
+        <!-- Comprehensive Upload Option -->
+        <div class="upload-option comprehensive" onclick="window.location.href='{% url 'file_upload' %}'">
+            <div class="comprehensive-badge">Recommended</div>
+            <div class="upload-icon">🚀</div>
+            <h3 class="upload-title">Comprehensive Upload</h3>
+            <p class="upload-description">Upload any file type with advanced features, validation, and processing.</p>
+            <ul class="upload-features">
+                <li>All file types supported</li>
+                <li>Drag & drop interface</li>
+                <li>Automatic validation</li>
+                <li>Real-time processing</li>
+                <li>Advanced metadata extraction</li>
+                <li>Export to multiple formats</li>
+                <li>File sharing capabilities</li>
+            </ul>
+            <a href="{% url 'file_upload' %}" class="upload-btn">Start Uploading</a>
+                </div>
+
+        <!-- KML Upload Option -->
+        <div class="upload-option kml" onclick="window.location.href='{% url 'kml_upload' %}'">
+            <div class="upload-icon">🗺️</div>
+            <h3 class="upload-title">KML Files</h3>
+            <p class="upload-description">Upload KML files for geographic data analysis and mapping.</p>
+            <ul class="upload-features">
+                <li>KML file validation</li>
+                <li>Placemark extraction</li>
+                <li>Coordinate parsing</li>
+                <li>Area calculations</li>
+                <li>Map preview</li>
+                <li>Export to CSV/Shapefile</li>
+            </ul>
+            <a href="{% url 'kml_upload' %}" class="upload-btn">Upload KML</a>
+        </div>
+
+        <!-- CSV Upload Option -->
+        <div class="upload-option csv" onclick="window.location.href='{% url 'file_upload' %}?type=csv'">
+            <div class="upload-icon">📊</div>
+            <h3 class="upload-title">CSV Files</h3>
+            <p class="upload-description">Upload CSV files for tabular data analysis and processing.</p>
+            <ul class="upload-features">
+                <li>CSV validation</li>
+                <li>Column analysis</li>
+                <li>Data type detection</li>
+                <li>Missing value analysis</li>
+                <li>Preview functionality</li>
+                <li>Export to Excel/JSON</li>
+            </ul>
+            <a href="{% url 'file_upload' %}?type=csv" class="upload-btn">Upload CSV</a>
+                </div>
+
+        <!-- Shapefile Upload Option -->
+        <div class="upload-option shapefile" onclick="window.location.href='{% url 'file_upload' %}?type=shapefile'">
+            <div class="upload-icon">🗺️</div>
+            <h3 class="upload-title">Shapefiles</h3>
+            <p class="upload-description">Upload shapefiles for geospatial vector data analysis.</p>
+            <ul class="upload-features">
+                <li>Shapefile validation</li>
+                <li>Geometry analysis</li>
+                <li>CRS detection</li>
+                <li>Feature counting</li>
+                <li>Spatial preview</li>
+                <li>Export capabilities</li>
+            </ul>
+            <a href="{% url 'file_upload' %}?type=shapefile" class="upload-btn">Upload Shapefile</a>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="stats-section">
+        <h3 style="text-align: center; margin-bottom: 2rem; color: #333; font-size: 1.5rem;">Quick Actions</h3>
+        <div class="stats-grid">
+            <div class="stat-item" onclick="window.location.href='{% url 'file_list' %}'" style="cursor: pointer;">
+                <div class="stat-number">📁</div>
+                <div class="stat-label">View All Files</div>
+            </div>
+            <div class="stat-item" onclick="window.location.href='{% url 'file_stats' %}'" style="cursor: pointer;">
+                <div class="stat-number">📈</div>
+                <div class="stat-label">File Statistics</div>
+            </div>
+            <div class="stat-item" onclick="window.location.href='{% url 'file_upload' %}'" style="cursor: pointer;">
+                <div class="stat-number">⬆️</div>
+                <div class="stat-label">Upload Files</div>
+            </div>
+            <div class="stat-item" onclick="window.location.href='{% url 'uploads' %}'" style="cursor: pointer;">
+                <div class="stat-number">🔄</div>
+                <div class="stat-label">Refresh Page</div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'userdashboard/uploads.js' %}"></script>
+{% endblock %} 

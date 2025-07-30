@@ -1,0 +1,550 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}File List - GeoSurvey{% endblock %}
+
+{% block content %}
+<style>
+    .file-list-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .list-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .upload-btn {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .filters-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .filters-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .filter-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .files-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .file-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .file-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .file-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .file-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .file-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .file-icon.kml { background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); }
+    .file-icon.csv { background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%); }
+    .file-icon.shapefile { background: linear-gradient(135deg, #A8E6CF 0%, #7FCDCD 100%); }
+    .file-icon.excel { background: linear-gradient(135deg, #FFD93D 0%, #FF6B6B 100%); }
+    .file-icon.pdf { background: linear-gradient(135deg, #FF6B6B 0%, #C44569 100%); }
+    .file-icon.image { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .file-icon.other { background: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 100%); }
+
+    .file-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-meta {
+        font-size: 0.85rem;
+        color: #666;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .file-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .file-status.pending { background: #FFF3CD; color: #856404; }
+    .file-status.processing { background: #D1ECF1; color: #0C5460; }
+    .file-status.completed { background: #D4EDDA; color: #155724; }
+    .file-status.failed { background: #F8D7DA; color: #721C24; }
+    .file-status.validated { background: #D1ECF1; color: #0C5460; }
+
+    .file-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .action-btn.primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .action-btn.secondary {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .action-btn.danger {
+        background: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+        border: 1px solid rgba(244, 67, 54, 0.2);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .page-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e1e5e9;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #333;
+    }
+
+    .page-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .page-btn.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-text {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .file-list-container {
+            padding: 1rem;
+        }
+
+        .list-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .list-title {
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .filters-row {
+            flex-direction: column;
+        }
+
+        .filter-group {
+            min-width: auto;
+        }
+
+        .files-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .file-meta {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+    }
+</style>
+
+<div class="file-list-container">
+    <div class="list-header">
+        <h1 class="list-title">My Files</h1>
+        <a href="{% url 'file_upload' %}" class="upload-btn">
+            📁 Upload New File
+        </a>
+    </div>
+
+    <div class="filters-section">
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label">Search Files</label>
+                <input type="text" name="search" value="{{ search }}" class="filter-input" placeholder="Search by name, description, or tags...">
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">File Type</label>
+                <select name="file_type" class="filter-input">
+                    <option value="">All Types</option>
+                    {% for value, label in file_types %}
+                        <option value="{{ value }}" {% if file_type_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select name="status" class="filter-input">
+                    <option value="">All Status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Sort By</label>
+                <select name="sort_by" class="filter-input">
+                    <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                    <option value="original_filename" {% if sort_by == 'original_filename' %}selected{% endif %}>Name A-Z</option>
+                    <option value="-original_filename" {% if sort_by == '-original_filename' %}selected{% endif %}>Name Z-A</option>
+                    <option value="file_size" {% if sort_by == 'file_size' %}selected{% endif %}>Size Small-Large</option>
+                    <option value="-file_size" {% if sort_by == '-file_size' %}selected{% endif %}>Size Large-Small</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="filter-btn">🔍 Apply Filters</button>
+        </form>
+    </div>
+
+    {% if files %}
+        <div class="files-grid">
+            {% for file in files %}
+                <div class="file-card">
+                    <div class="file-header">
+                        <div class="file-icon {{ file.file_type }}">
+                            {% if file.file_type == 'kml' %}🗺️
+                            {% elif file.file_type == 'csv' %}📊
+                            {% elif file.file_type == 'shapefile' %}🗺️
+                            {% elif file.file_type == 'excel' %}📈
+                            {% elif file.file_type == 'pdf' %}📄
+                            {% elif file.file_type == 'image' %}🖼️
+                            {% else %}📁
+                            {% endif %}
+                        </div>
+                        
+                        <div class="file-info">
+                            <div class="file-name">{{ file.original_filename }}</div>
+                            <div class="file-meta">
+                                <span>{{ file.file_size_mb }} MB</span>
+                                <span>{{ file.created_at|date:"M d, Y" }}</span>
+                                <span class="file-status {{ file.status }}">{{ file.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if file.description %}
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">{{ file.description|truncatechars:100 }}</p>
+                    {% endif %}
+                    
+                    {% if file.tags %}
+                        <div style="margin-bottom: 1rem;">
+                            {% for tag in file.tags %}
+                                <span style="background: rgba(102, 126, 234, 0.1); color: #667eea; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; margin-right: 0.5rem;">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="file-actions">
+                        <a href="{% url 'file_detail' file.id %}" class="action-btn primary">👁️ View</a>
+                        {% if file.status == 'completed' %}
+                            <a href="{% url 'file_preview_new' file.id %}" class="action-btn secondary">🔍 Preview</a>
+                        {% endif %}
+                        <button onclick="deleteFile('{{ file.id }}', '{{ file.original_filename }}')" class="action-btn danger">🗑️ Delete</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if files.has_other_pages %}
+            <div class="pagination">
+                {% if files.has_previous %}
+                    <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if file_type_filter %}&file_type={{ file_type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="page-btn">« First</a>
+                    <a href="?page={{ files.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if file_type_filter %}&file_type={{ file_type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="page-btn">‹ Previous</a>
+                {% endif %}
+                
+                <span class="page-btn active">{{ files.number }} of {{ files.paginator.num_pages }}</span>
+                
+                {% if files.has_next %}
+                    <a href="?page={{ files.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if file_type_filter %}&file_type={{ file_type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="page-btn">Next ›</a>
+                    <a href="?page={{ files.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if file_type_filter %}&file_type={{ file_type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="page-btn">Last »</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📁</div>
+            <div class="empty-state-text">No files found</div>
+            <p>Upload your first file to get started!</p>
+            <a href="{% url 'file_upload' %}" class="upload-btn" style="margin-top: 1rem;">📁 Upload File</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function deleteFile(fileId, fileName) {
+    if (confirm(`Are you sure you want to delete "${fileName}"? This action cannot be undone.`)) {
+        fetch(`/dashboard/files/${fileId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('File deleted successfully!', 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showToast(data.error || 'Failed to delete file', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Failed to delete file', 'error');
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        z-index: 1000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' : 
+                    type === 'error' ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)' : 
+                    'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)'};
+    `;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+}
+
+// Add staggered animation to file cards
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.file-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %} 

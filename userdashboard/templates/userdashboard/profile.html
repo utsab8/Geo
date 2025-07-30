@@ -1,0 +1,385 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}Profile - GeoSurvey{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'userdashboard/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Header Section -->
+    <div class="profile-header-section">
+        <div class="profile-header-content">
+            <div class="profile-avatar-section">
+                <div class="profile-avatar-container">
+                    <img src="{% if user.avatar and user.avatar.url %}{{ user.avatar.url }}{% else %}data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iNjAiIGZpbGw9IiM2QjcyOEIiLz4KPGNpcmNsZSBjeD0iNjAiIGN5PSI0NSIgcj0iMjAiIGZpbGw9IiNEOUQ5RDkiLz4KPHBhdGggZD0iTTIwIDEwNUMyMCA5NS4wNTc2IDI4LjA1NzYgODcgMzggODdIODJDNzEuOTQyNCA4NyA2NCA5NS4wNTc2IDY0IDEwNUg2NEM2NCA5NS4wNTc2IDU1Ljk0MjQgODcgNDUgODdIMzhDMjguMDU3NiA4NyAyMCA5NS4wNTc2IDIwIDEwNVoiIGZpbGw9IiNEOUQ5RDkiLz4KPC9zdmc+Cg=={% endif %}" 
+                         alt="Profile Picture" class="profile-avatar" id="profile-avatar-preview">
+                    <div class="avatar-overlay">
+                        <label for="avatar-upload" class="avatar-upload-btn">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                    </div>
+                </div>
+                <input type="file" id="avatar-upload" name="avatar" accept="image/*" style="display: none;">
+            </div>
+            
+            <div class="profile-info-section">
+                <h1 class="profile-name">{{ user.full_name|default:user.email }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-file"></i>
+                        <span>{{ total_files|default:"0" }} Files</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-map"></i>
+                        <span>{{ total_surveys|default:"0" }} Surveys</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Completion Status -->
+        <div class="profile-completion-section">
+            <div class="completion-header">
+                <h3>Profile Completion</h3>
+                {% if is_verified %}
+                    <div class="verification-badge">
+                        <i class="fas fa-check-circle"></i>
+                        Verified Profile
+                    </div>
+                {% endif %}
+            </div>
+            <div class="completion-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ profile_completion }}%"></div>
+                </div>
+                <span class="progress-text">{{ profile_completion }}% Complete</span>
+            </div>
+            <div class="completion-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-label">Personal Info:</span>
+                    <span class="breakdown-value">{{ personal_completion }}%</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">Social Links:</span>
+                    <span class="breakdown-value">{{ social_completion }}%</span>
+                </div>
+            </div>
+            {% if profile_completion < 100 %}
+                <div class="completion-tip">
+                    <i class="fas fa-lightbulb"></i>
+                    {% if personal_completion < 100 %}
+                        Complete your personal information to reach 80%
+                    {% elif social_completion < 100 %}
+                        Add your social links to reach 100% and get verified
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Profile Navigation -->
+    <div class="profile-navigation">
+        <div class="nav-dot active" data-section="profile-overview" title="Overview"></div>
+        <div class="nav-dot" data-section="profile-details" title="Personal Info"></div>
+        <div class="nav-dot" data-section="social-links" title="Social Links"></div>
+        <div class="nav-dot" data-section="account-settings" title="Settings"></div>
+        <div class="nav-dot" data-section="password-section" title="Security"></div>
+        <div class="nav-dot" data-section="activity-section" title="Activity"></div>
+        <div class="nav-dot" data-section="danger-zone" title="Danger Zone"></div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- Overview Section -->
+        <section id="profile-overview" class="profile-section-block">
+            <div class="section-header">
+                <h2><i class="fas fa-user-circle"></i> Profile Overview</h2>
+            </div>
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Account Status</h3>
+                        <p>{% if is_verified %}Verified Account{% else %}Basic Account{% endif %}</p>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Member Since</h3>
+                        <p>{{ user.date_joined|date:"M Y" }}</p>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Last Login</h3>
+                        <p>{{ user.last_login|date:"M d, Y"|default:"Never" }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Personal Information Section -->
+        <section id="profile-details" class="profile-section-block">
+            <div class="section-header">
+                <h2><i class="fas fa-user"></i> Personal Information</h2>
+                <button type="button" class="save-btn" onclick="saveProfile()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+            <form id="profile-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_profile">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="full_name">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" value="{{ user.full_name|default:'' }}" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number</label>
+                        <input type="tel" id="phone_number" name="phone_number" value="{{ user.phone_number|default:'' }}" placeholder="Enter your phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="date_of_birth">Date of Birth</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d'|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input type="text" id="address" name="address" value="{{ user.address|default:'' }}" placeholder="Enter your address">
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" value="{{ user.city|default:'' }}" placeholder="Enter your city">
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State/Province</label>
+                        <input type="text" id="state" name="state" value="{{ user.state|default:'' }}" placeholder="Enter your state">
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <input type="text" id="country" name="country" value="{{ user.country|default:'' }}" placeholder="Enter your country">
+                    </div>
+                    <div class="form-group">
+                        <label for="postal_code">Postal Code</label>
+                        <input type="text" id="postal_code" name="postal_code" value="{{ user.postal_code|default:'' }}" placeholder="Enter your postal code">
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Social Links Section -->
+        <section id="social-links" class="profile-section-block">
+            <div class="section-header">
+                <h2><i class="fas fa-share-alt"></i> Social Media Links</h2>
+                <button type="button" class="save-btn" onclick="saveSocial()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+            <form id="social-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_social">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="github">GitHub</label>
+                        <input type="url" id="github" name="github" value="{{ user.github|default:'' }}" placeholder="https://github.com/username">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkedin">LinkedIn</label>
+                        <input type="url" id="linkedin" name="linkedin" value="{{ user.linkedin|default:'' }}" placeholder="https://linkedin.com/in/username">
+                    </div>
+                    <div class="form-group">
+                        <label for="facebook">Facebook</label>
+                        <input type="url" id="facebook" name="facebook" value="{{ user.facebook|default:'' }}" placeholder="https://facebook.com/username">
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Account Settings Section -->
+        <section id="account-settings" class="profile-section-block">
+            <div class="section-header">
+                <h2><i class="fas fa-cog"></i> Account Settings</h2>
+                <button type="button" class="save-btn" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+            <form id="settings-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_settings">
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Email Notifications</h3>
+                            <p>Receive email notifications about your account activity</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="email_notifications" {% if user_preferences.email_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Two-Factor Authentication</h3>
+                            <p>Add an extra layer of security to your account</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="two_factor_enabled" {% if user_preferences.two_factor_enabled %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Public Profile</h3>
+                            <p>Allow others to view your public profile information</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="public_profile" {% if user_preferences.public_profile %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="theme_preference">Theme Preference</label>
+                        <select id="theme_preference" name="theme_preference">
+                            <option value="light" {% if user_preferences.theme_preference == 'light' %}selected{% endif %}>Light</option>
+                            <option value="dark" {% if user_preferences.theme_preference == 'dark' %}selected{% endif %}>Dark</option>
+                            <option value="auto" {% if user_preferences.theme_preference == 'auto' %}selected{% endif %}>Auto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="language">Language</label>
+                        <select id="language" name="language">
+                            <option value="en" {% if user_preferences.language == 'en' %}selected{% endif %}>English</option>
+                            <option value="es" {% if user_preferences.language == 'es' %}selected{% endif %}>Español</option>
+                            <option value="fr" {% if user_preferences.language == 'fr' %}selected{% endif %}>Français</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Password Change Section -->
+        <section id="password-section" class="profile-section-block">
+            <div class="section-header">
+                <h2><i class="fas fa-lock"></i> Security</h2>
+            </div>
+            <form id="password-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="current_password">Current Password</label>
+                        <input type="password" id="current_password" name="current_password" placeholder="Enter your current password">
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">New Password</label>
+                        <input type="password" id="new_password" name="new_password" placeholder="Enter your new password">
+                        <div class="password-strength" id="password-strength"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm New Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your new password">
+                    </div>
+                </div>
+                <button type="button" class="save-btn" onclick="changePassword()">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </form>
+        </section>
+
+        <!-- Activity Section -->
+        <section id="activity-section" class="profile-section-block">
+            <div class="section-header">
+                <h2><i class="fas fa-history"></i> Recent Activity</h2>
+            </div>
+            <div class="activity-list">
+                {% if recent_activities %}
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-{% if 'profile' in activity.type %}user{% elif 'password' in activity.type %}lock{% elif 'social' in activity.type %}share-alt{% elif 'settings' in activity.type %}cog{% else %}circle{% endif %}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p class="activity-text">{{ activity.description|default:activity.type }}</p>
+                            <span class="activity-time">{{ activity.timestamp|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>No Recent Activity</h3>
+                        <p>Your recent activities will appear here</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Danger Zone Section -->
+        <section id="danger-zone" class="profile-section-block">
+            <div class="section-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Danger Zone</h2>
+            </div>
+            <div class="danger-zone-content">
+                <div class="danger-item">
+                    <div class="danger-info">
+                        <h3>Delete Account</h3>
+                        <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+                    </div>
+                    <button type="button" class="danger-btn" onclick="showDeleteConfirmation()">
+                        <i class="fas fa-trash"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="modal-title">Delete Account</div>
+        <div class="modal-message">
+            This action will permanently delete your account and all associated data. This cannot be undone.
+        </div>
+        <form id="delete-form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_account">
+            <div class="form-group">
+                <label for="delete_password">Enter your password to confirm</label>
+                <input type="password" id="delete_password" name="delete_password" placeholder="Enter your password" required>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn cancel" onclick="hideDeleteConfirmation()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="submit" class="modal-btn confirm">
+                    <i class="fas fa-trash"></i> Delete Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'userdashboard/profile.js' %}"></script>
+{% endblock %} 

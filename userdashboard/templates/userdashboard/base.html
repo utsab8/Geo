@@ -1,0 +1,642 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}User Dashboard - GeoSurvey{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'userdashboard/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    <style>
+        /* Essential fallback styles */
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Critical navbar fixes */
+        .navbar-container {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 2rem !important;
+        }
+        
+        .navbar-menu {
+            flex: 0 1 auto !important;
+            justify-content: center !important;
+        }
+        
+        .navbar-profile {
+            margin-left: 0 !important;
+            flex-shrink: 0 !important;
+        }
+        
+        /* Profile avatar fixes */
+        .profile-avatar {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+        }
+        
+        .profile-avatar img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+        
+        /* Dropdown positioning */
+        .dropdown-menu {
+            right: 0 !important;
+            left: auto !important;
+        }
+    </style>
+    <style>
+        /* Additional styles for logout button */
+        .logout-btn:hover .dropdown-icon {
+            transform: rotate(90deg);
+        }
+
+        /* Loading State */
+        .logout-btn.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .logout-btn.loading .dropdown-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 10px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #667eea;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left-color: #28a745;
+        }
+
+        .toast.error {
+            border-left-color: #dc3545;
+        }
+
+        .toast.info {
+            border-left-color: #17a2b8;
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .modal-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .modal-btn.cancel {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .modal-btn.confirm:hover {
+            background: linear-gradient(135deg, #ee5a52, #dc3545);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238, 90, 82, 0.4);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modal {
+                margin: 20px;
+                padding: 25px;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+            
+            .toast {
+                max-width: none;
+            }
+        }
+
+        /* Enhanced Dropdown Animations */
+        .dropdown-item {
+            --item-index: 0;
+        }
+
+        .dropdown-item:nth-child(1) { --item-index: 0; }
+        .dropdown-item:nth-child(2) { --item-index: 1; }
+        .dropdown-item:nth-child(3) { --item-index: 2; }
+        .dropdown-item:nth-child(4) { --item-index: 3; }
+        .dropdown-item:nth-child(5) { --item-index: 4; }
+
+        /* Profile Status Indicator */
+        .profile-status {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-status.offline {
+            background: #dc3545;
+        }
+
+        .profile-status.away {
+            background: #ffc107;
+        }
+
+        /* Enhanced Navigation Indicators */
+        .nav-link .nav-indicator {
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 20px;
+            height: 3px;
+            background: linear-gradient(90deg, #ffffff, #f0f0f0);
+            border-radius: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover .nav-indicator,
+        .nav-link.active .nav-indicator {
+            transform: translateX(-50%) scaleX(1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navbar -->
+    <nav class="top-navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="{% url 'user_dashboard' %}" class="brand-logo">
+                    <span class="logo-icon">🗺️</span>
+                    <h1 class="brand-text">GeoSurvey</h1>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <a href="{% url 'user_dashboard' %}" class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Dashboard</span>
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="{% url 'uploads' %}" class="nav-link {% if request.path == '/dashboard/uploads/' %}active{% endif %}">
+                    <span class="nav-icon">📤</span>
+                    <span class="nav-text">Uploads</span>
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="{% url 'my_survey' %}" class="nav-link {% if request.path == '/dashboard/my-survey/' %}active{% endif %}">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">My Survey</span>
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="{% url 'survey_report' %}" class="nav-link {% if request.path == '/dashboard/survey-report/' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Survey Report</span>
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="{% url 'history' %}" class="nav-link {% if request.path == '/dashboard/history/' %}active{% endif %}">
+                    <span class="nav-icon">🕑</span>
+                    <span class="nav-text">History</span>
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="{% url 'help' %}" class="nav-link {% if request.path == '/dashboard/help/' %}active{% endif %}">
+                    <span class="nav-icon">❓</span>
+                    <span class="nav-text">Help</span>
+                    <span class="nav-indicator"></span>
+                </a>
+            </div>
+            <div class="navbar-profile">
+                <div class="profile-dropdown">
+                    <div class="profile-trigger" id="profileTrigger">
+                        <div class="profile-avatar">
+                            <img src="{% if user.avatar and user.avatar.url %}{{ user.avatar.url }}{% else %}data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiM2QjcyOEIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNSIgcj0iNiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNyAzNUMyNyAzNSAyNyAzNSAyNyAzNUgyN0MyNyAzNSAyNyAzNSAyNyAzNUg3WiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K{% endif %}" alt="Profile" class="profile-avatar-img">
+                            <div class="profile-status" id="profileStatus"></div>
+                        </div>
+                        <span class="profile-name" id="profileName">{{ user.full_name|default:user.email }}</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-menu" id="profileDropdown">
+                        <a href="{% url 'profile' %}" class="dropdown-item">
+                            <span class="dropdown-icon">👤</span>
+                            Profile Settings
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item logout-btn" onclick="showLogoutConfirmation()">
+                            <span class="dropdown-icon"><i class="fas fa-sign-out-alt"></i></span>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="navbar-toggle" id="navbarToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        {% csrf_token %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal">
+            <div class="modal-icon">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <div class="modal-title">Confirm Logout</div>
+            <div class="modal-message">
+                Are you sure you want to logout? You'll need to sign in again to access your dashboard.
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="hideLogoutConfirmation()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="modal-btn confirm" onclick="performLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Enhanced Navbar Functionality
+        class NavbarManager {
+            constructor() {
+                this.profileTrigger = document.getElementById('profileTrigger');
+                this.profileDropdown = document.getElementById('profileDropdown');
+                this.navbarToggle = document.getElementById('navbarToggle');
+                this.navbarMenu = document.querySelector('.navbar-menu');
+                this.profileStatus = document.getElementById('profileStatus');
+                this.profileName = document.getElementById('profileName');
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupProfileStatus();
+                this.setupKeyboardShortcuts();
+                this.setupAnimations();
+            }
+
+            setupEventListeners() {
+                // Profile dropdown toggle
+                this.profileTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleProfileDropdown();
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.profile-dropdown')) {
+                        this.hideProfileDropdown();
+                    }
+                });
+
+                // Mobile menu toggle
+                this.navbarToggle.addEventListener('click', () => {
+                    this.toggleMobileMenu();
+                });
+
+                // Close mobile menu when clicking on a link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        this.hideMobileMenu();
+                    });
+                });
+
+                // Enhanced hover effects for dropdown
+                this.profileTrigger.addEventListener('mouseenter', () => {
+                    if (window.innerWidth > 768) {
+                        this.showProfileDropdown();
+                    }
+                });
+
+                this.profileDropdown.addEventListener('mouseleave', () => {
+                    if (window.innerWidth > 768) {
+                        this.hideProfileDropdown();
+                    }
+                });
+            }
+
+            setupProfileStatus() {
+                // Simulate online status (in real app, this would come from backend)
+                this.profileStatus.classList.add('online');
+                
+                // Add status indicator animation
+                setInterval(() => {
+                    this.profileStatus.style.animation = 'pulse 2s infinite';
+                }, 5000);
+            }
+
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // Ctrl/Cmd + L for logout
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                        e.preventDefault();
+                        showLogoutConfirmation();
+                    }
+                    
+                    // Escape to close dropdowns
+                    if (e.key === 'Escape') {
+                        this.hideProfileDropdown();
+                        this.hideMobileMenu();
+                        hideLogoutConfirmation();
+                    }
+                });
+            }
+
+            setupAnimations() {
+                // Add staggered animation to dropdown items
+                const dropdownItems = this.profileDropdown.querySelectorAll('.dropdown-item');
+                dropdownItems.forEach((item, index) => {
+                    item.style.setProperty('--item-index', index);
+                });
+
+                // Add hover animations to nav links
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('mouseenter', () => {
+                        link.style.transform = 'translateY(-2px)';
+                    });
+                    
+                    link.addEventListener('mouseleave', () => {
+                        link.style.transform = 'translateY(0)';
+                    });
+                });
+            }
+
+            toggleProfileDropdown() {
+                if (this.profileDropdown.classList.contains('show')) {
+                    this.hideProfileDropdown();
+                } else {
+                    this.showProfileDropdown();
+                }
+            }
+
+            showProfileDropdown() {
+                this.profileDropdown.classList.add('show');
+                this.profileTrigger.querySelector('.dropdown-arrow').style.transform = 'rotate(180deg)';
+            }
+
+            hideProfileDropdown() {
+                this.profileDropdown.classList.remove('show');
+                this.profileTrigger.querySelector('.dropdown-arrow').style.transform = 'rotate(0deg)';
+            }
+
+            toggleMobileMenu() {
+                this.navbarMenu.classList.toggle('active');
+                this.navbarToggle.classList.toggle('active');
+            }
+
+            hideMobileMenu() {
+                this.navbarMenu.classList.remove('active');
+                this.navbarToggle.classList.remove('active');
+            }
+        }
+
+        // Enhanced Logout Functionality
+        function showLogoutConfirmation() {
+            document.getElementById('logoutModal').classList.add('show');
+            // Close dropdown
+            navbarManager.hideProfileDropdown();
+        }
+
+        function hideLogoutConfirmation() {
+            document.getElementById('logoutModal').classList.remove('show');
+        }
+
+        async function performLogout() {
+            const logoutBtn = document.querySelector('.logout-btn');
+            const confirmBtn = document.querySelector('.modal-btn.confirm');
+            
+            // Show loading state
+            logoutBtn.classList.add('loading');
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+            confirmBtn.disabled = true;
+
+            try {
+                // Clear any stored tokens
+                localStorage.removeItem('access');
+                localStorage.removeItem('refresh');
+                sessionStorage.clear();
+
+                // Show success message
+                showToast('Logging out successfully...', 'success');
+
+                // Small delay to show the message
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Method 1: Try direct redirect to logout URL
+                window.location.href = '/logout/';
+
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('Logout failed. Please try again.', 'error');
+                
+                // Reset button state
+                logoutBtn.classList.remove('loading');
+                confirmBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+                confirmBtn.disabled = false;
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('logoutModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideLogoutConfirmation();
+            }
+        });
+
+        // Initialize navbar manager
+        let navbarManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            navbarManager = new NavbarManager();
+            
+            // Show welcome toast for first-time visitors
+            if (!localStorage.getItem('welcomeShown')) {
+                setTimeout(() => {
+                    showToast('Welcome to GeoSurvey! 🗺️', 'success');
+                    localStorage.setItem('welcomeShown', 'true');
+                }, 1000);
+            }
+        });
+
+        // Add CSS for pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            
+            .profile-status.online {
+                background: #28a745;
+                animation: pulse 2s infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 
