@@ -11,15 +11,17 @@
     <style>
         .file-card {
             transition: all 0.3s ease;
-            border: none;
-            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: var(--card-bg);
         }
         
         .file-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-color);
         }
         
         .file-icon {
@@ -31,6 +33,7 @@
             justify-content: center;
             font-size: 1.5rem;
             color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
         .status-badge {
@@ -43,56 +46,56 @@
         }
         
         .status-processing {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, var(--warning-color), var(--warning-dark));
             color: white;
         }
         
         .status-completed {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, var(--success-color), var(--success-dark));
             color: white;
         }
         
         .status-error {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
             color: white;
         }
         
         .upload-zone {
-            border: 2px dashed #2563eb;
-            border-radius: 15px;
+            border: 2px dashed var(--primary-color);
+            border-radius: 12px;
             padding: 40px;
             text-align: center;
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            background: var(--light-bg);
             transition: all 0.3s ease;
         }
         
         .upload-zone:hover {
-            border-color: #1d4ed8;
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border-color: var(--primary-dark);
+            background: #f1f5f9;
         }
         
         .upload-zone.dragover {
-            border-color: #10b981;
+            border-color: var(--success-color);
             background: linear-gradient(135deg, #d1fae5, #a7f3d0);
         }
         
         .analytics-card {
-            background: linear-gradient(135deg, #ffffff, #f8fafc);
-            border: none;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             transition: all 0.3s ease;
         }
         
         .analytics-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
         
         .processing-queue {
             background: linear-gradient(135deg, #fef3c7, #fde68a);
-            border: 1px solid #f59e0b;
+            border: 1px solid var(--warning-color);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;

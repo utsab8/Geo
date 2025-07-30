@@ -61,7 +61,7 @@ class UserDashboardView(LoginRequiredMixin, View):
     def get(self, request):
         # Ensure user is authenticated
         if not request.user.is_authenticated:
-            return redirect('login')
+            return redirect('login_page')
         
         try:
             # Count total files
@@ -128,6 +128,30 @@ class UserDashboardView(LoginRequiredMixin, View):
                 'recent_activities': [],
             }
             return render(request, 'userdashboard/dashboard.html', context)
+
+class PublicDashboardView(View):
+    """Public dashboard view for unauthenticated users"""
+    def get(self, request):
+        context = {
+            'show_login_prompt': True,
+            'login_url': '/api/account/login-page/',
+            'signup_url': '/api/account/signup-page/',
+        }
+        return render(request, 'userdashboard/public_dashboard.html', context)
+
+def test_logout_view(request):
+    """Test view to verify logout functionality"""
+    if request.user.is_authenticated:
+        return JsonResponse({
+            'status': 'authenticated',
+            'user': request.user.username,
+            'logout_url': '/logout/'
+        })
+    else:
+        return JsonResponse({
+            'status': 'not_authenticated',
+            'login_url': '/api/account/login-page/'
+        })
 
 class UploadsView(LoginRequiredMixin, View):
     def get(self, request):

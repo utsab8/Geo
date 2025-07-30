@@ -11,25 +11,27 @@
     <style>
         .settings-card {
             transition: all 0.3s ease;
-            border: none;
-            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: var(--card-bg);
         }
         
         .settings-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-color);
         }
         
         .setting-item {
             padding: 20px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
             transition: background-color 0.3s ease;
         }
         
         .setting-item:hover {
-            background-color: #f8fafc;
+            background-color: var(--light-bg);
         }
         
         .setting-item:last-child {
@@ -74,7 +76,7 @@
         }
         
         input:checked + .slider {
-            background-color: #2563eb;
+            background-color: var(--primary-color);
         }
         
         input:checked + .slider:before {
@@ -84,14 +86,20 @@
         .color-picker {
             width: 50px;
             height: 50px;
-            border: none;
+            border: 2px solid var(--border-color);
             border-radius: 10px;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .color-picker:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
         }
         
         .backup-schedule {
             background: linear-gradient(135deg, #fef3c7, #fde68a);
-            border: 1px solid #f59e0b;
+            border: 1px solid var(--warning-color);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
@@ -192,6 +200,11 @@
                             <i class="fas fa-palette me-2"></i>Appearance
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab">
+                            <i class="fas fa-cogs me-2"></i>Advanced
+                        </button>
+                    </li>
                 </ul>
 
                 <!-- Settings Content -->
@@ -270,6 +283,87 @@
                                                 <input type="checkbox" id="debugMode">
                                                 <span class="slider"></span>
                                             </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Max File Size (MB)</h6>
+                                            <p class="text-muted mb-0">Maximum file size allowed for uploads</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="maxFileSize" value="10" min="1" max="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Allowed File Types</h6>
+                                            <p class="text-muted mb-0">Comma-separated list of allowed file extensions</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" id="allowedFileTypes" value="kml,csv,shp,zip">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Auto Process Files</h6>
+                                            <p class="text-muted mb-0">Automatically process uploaded files</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="autoProcessFiles" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Enable Analytics</h6>
+                                            <p class="text-muted mb-0">Enable user analytics and tracking</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="enableAnalytics" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Enable Logging</h6>
+                                            <p class="text-muted mb-0">Enable system logging and activity tracking</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="enableLogging" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Log Retention (days)</h6>
+                                            <p class="text-muted mb-0">How long to keep log files</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="logRetentionDays" value="30" min="1" max="365">
                                         </div>
                                     </div>
                                 </div>
@@ -572,6 +666,280 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Advanced Settings -->
+                    <div class="tab-pane fade" id="advanced" role="tabpanel">
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Advanced Settings</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">SMTP Host</h6>
+                                            <p class="text-muted mb-0">SMTP server for email notifications</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" id="smtpHost" placeholder="smtp.gmail.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">SMTP Port</h6>
+                                            <p class="text-muted mb-0">SMTP server port</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="smtpPort" value="587" min="1" max="65535">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">SMTP Username</h6>
+                                            <p class="text-muted mb-0">SMTP authentication username</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" id="smtpUsername" placeholder="your-email@gmail.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">SMTP Password</h6>
+                                            <p class="text-muted mb-0">SMTP authentication password</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="password" class="form-control" id="smtpPassword" placeholder="Enter password">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Use TLS</h6>
+                                            <p class="text-muted mb-0">Enable TLS encryption for SMTP</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="smtpUseTLS" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">From Email</h6>
+                                            <p class="text-muted mb-0">Default sender email address</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="email" class="form-control" id="fromEmail" value="noreply@geosurveypro.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">API Rate Limit</h6>
+                                            <p class="text-muted mb-0">Maximum API requests per minute</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="apiRateLimit" value="1000" min="10" max="10000">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">API Key Expiration (days)</h6>
+                                            <p class="text-muted mb-0">How long API keys remain valid</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="apiKeyExpiration" value="30" min="1" max="365">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Enable API Access</h6>
+                                            <p class="text-muted mb-0">Allow API access to the system</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="enableAPIAccess" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Require API Key</h6>
+                                            <p class="text-muted mb-0">Require API key for all API requests</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="requireAPIKey">
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Max Login Attempts</h6>
+                                            <p class="text-muted mb-0">Maximum failed login attempts before lockout</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="maxLoginAttempts" value="5" min="1" max="20">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Lockout Duration (minutes)</h6>
+                                            <p class="text-muted mb-0">How long to lock out after failed attempts</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="lockoutDuration" value="15" min="1" max="1440">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Password Expiration (days)</h6>
+                                            <p class="text-muted mb-0">How often users must change passwords</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="passwordExpirationDays" value="90" min="0" max="365">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Max Processing Time (seconds)</h6>
+                                            <p class="text-muted mb-0">Maximum time for file processing</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="maxProcessingTime" value="300" min="30" max="3600">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Max Parallel Jobs</h6>
+                                            <p class="text-muted mb-0">Maximum concurrent processing jobs</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="maxParallelJobs" value="4" min="1" max="20">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Storage Path</h6>
+                                            <p class="text-muted mb-0">Path for file storage</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" id="storagePath" value="/uploads/">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Max Storage Quota (MB)</h6>
+                                            <p class="text-muted mb-0">Maximum storage per user</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="maxStorageQuota" value="1024" min="10" max="10000">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Enable Storage Quota</h6>
+                                            <p class="text-muted mb-0">Enforce storage limits per user</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="enableStorageQuota" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Monitoring Interval (seconds)</h6>
+                                            <p class="text-muted mb-0">How often to collect system metrics</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="monitoringInterval" value="60" min="10" max="3600">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Maintenance Time</h6>
+                                            <p class="text-muted mb-0">Time for scheduled maintenance (24h format)</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="time" class="form-control" id="maintenanceTime" value="02:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-1">Cleanup Retention (days)</h6>
+                                            <p class="text-muted mb-0">How long to keep old data before cleanup</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" class="form-control" id="cleanupRetentionDays" value="90" min="1" max="365">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
@@ -721,27 +1089,74 @@
 
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
+            toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
             toast.innerHTML = `
                 <div class="d-flex align-items-center">
                     <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
                     <span>${message}</span>
                 </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             
-            let container = document.getElementById('toastContainer');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toastContainer';
-                document.body.appendChild(container);
-            }
-            
-            container.appendChild(toast);
+            document.body.appendChild(toast);
             
             setTimeout(() => {
-                toast.remove();
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
             }, 5000);
         }
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + S to save all settings
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveAllSettings();
+            }
+            
+            // Ctrl/Cmd + R to reset settings
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                resetSettings();
+            }
+        });
+        
+        // Add auto-save indicator
+        let autoSaveTimeout;
+        function showAutoSaveIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'autoSaveIndicator';
+            indicator.className = 'position-fixed';
+            indicator.style.cssText = 'bottom: 20px; right: 20px; z-index: 9999; background: #28a745; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px;';
+            indicator.innerHTML = '<i class="fas fa-save me-2"></i>Auto-saving...';
+            
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    indicator.parentNode.removeChild(indicator);
+                }
+            }, 2000);
+        }
+        
+        // Enhanced auto-save functionality
+        function setupAutoSave() {
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    clearTimeout(autoSaveTimeout);
+                    autoSaveTimeout = setTimeout(() => {
+                        saveSetting(this.id, this.value, this.type === 'checkbox' ? this.checked : this.value);
+                        showAutoSaveIndicator();
+                    }, 1000); // Auto-save after 1 second of inactivity
+                });
+            });
+        }
+        
+        // Initialize auto-save
+        setupAutoSave();
     </script>
 </body>
 </html>

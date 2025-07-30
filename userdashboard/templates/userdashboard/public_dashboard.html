@@ -1,0 +1,276 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}Welcome - GeoSurvey{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Public Dashboard Styles */
+    .public-dashboard {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+
+    .welcome-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 100%;
+        animation: slideUp 0.6s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .welcome-icon {
+        font-size: 4rem;
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+
+    .welcome-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .feature-list {
+        text-align: left;
+        margin: 30px 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .feature-list li {
+        padding: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: #555;
+        font-size: 1.1rem;
+    }
+
+    .feature-list li i {
+        color: #667eea;
+        font-size: 1.2rem;
+        width: 20px;
+    }
+
+    .auth-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .auth-btn {
+        padding: 15px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 150px;
+        justify-content: center;
+    }
+
+    .login-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .login-btn:hover {
+        background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .signup-btn {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .signup-btn:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .demo-section {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+    }
+
+    .demo-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .demo-text {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .demo-btn {
+        background: #f8f9fa;
+        color: #667eea;
+        border: 1px solid #dee2e6;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .demo-btn:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .welcome-card {
+            padding: 30px 20px;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+        }
+
+        .auth-buttons {
+            flex-direction: column;
+        }
+
+        .auth-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="public-dashboard">
+    <div class="welcome-card">
+        <div class="welcome-icon">
+            <i class="fas fa-map-marked-alt"></i>
+        </div>
+        
+        <h1 class="welcome-title">Welcome to GeoSurvey</h1>
+        <p class="welcome-subtitle">
+            Your comprehensive land surveying and mapping solution. 
+            Upload, analyze, and manage your survey data with ease.
+        </p>
+
+        <ul class="feature-list">
+            <li>
+                <i class="fas fa-upload"></i>
+                Upload KML, CSV, and Shapefile formats
+            </li>
+            <li>
+                <i class="fas fa-map"></i>
+                Interactive map visualization
+            </li>
+            <li>
+                <i class="fas fa-chart-bar"></i>
+                Generate detailed survey reports
+            </li>
+            <li>
+                <i class="fas fa-download"></i>
+                Export data in multiple formats
+            </li>
+            <li>
+                <i class="fas fa-history"></i>
+                Track all your survey activities
+            </li>
+        </ul>
+
+        <div class="auth-buttons">
+            <a href="{{ login_url }}" class="auth-btn login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </a>
+            <a href="{{ signup_url }}" class="auth-btn signup-btn">
+                <i class="fas fa-user-plus"></i>
+                Sign Up
+            </a>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">New to GeoSurvey?</h3>
+            <p class="demo-text">
+                Create an account to start uploading and managing your survey data. 
+                It's free and takes just a few minutes to get started.
+            </p>
+            <a href="{{ signup_url }}" class="demo-btn">
+                <i class="fas fa-rocket"></i>
+                Get Started Now
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add some interactive effects
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effects to feature list items
+        const featureItems = document.querySelectorAll('.feature-list li');
+        featureItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(10px)';
+                this.style.color = '#667eea';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+                this.style.color = '#555';
+            });
+        });
+
+        // Add click tracking for analytics (if needed)
+        const authButtons = document.querySelectorAll('.auth-btn');
+        authButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // You can add analytics tracking here
+                console.log('Auth button clicked:', this.textContent.trim());
+            });
+        });
+    });
+</script>
+{% endblock %} 

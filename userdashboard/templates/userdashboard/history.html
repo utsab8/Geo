@@ -620,6 +620,9 @@
                 <button class="btn btn-success" onclick="createSampleData()">
                     📊 Create Sample Data
                 </button>
+                <a href="{% url 'logout' %}" class="btn btn-secondary" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </div>
         </div>
 
@@ -1103,5 +1106,14 @@
     window.addEventListener('beforeunload', function() {
         stopAutoRefresh();
     });
+
+    // Logout function for history page
+    function logoutFromHistory() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '{% url "logout" %}';
+        }
+    }
 </script>
 {% endblock %} 

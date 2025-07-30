@@ -384,24 +384,28 @@
         });
 
         function loadDashboardData() {
-            // Load key metrics
-            fetch('{% url "admin_api_stats" %}')
+            // Load comprehensive dashboard data
+            fetch('{% url "admin_api_dashboard" %}')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         updateMetrics(data.stats);
+                        updateSystemHealth(data.system_health);
+                        displayRecentActivity(data.recent_activities);
+                        displayAlerts(data.system_alerts);
+                        updatePerformanceMetrics(data.performance_metrics);
+                        updateCharts(data.user_trends, data.file_distribution);
+                        updateTopUsers(data.top_users);
+                        updateRealTimeData(data.real_time_data);
+                    } else {
+                        console.error('Dashboard API error:', data.message);
+                        showToast('Error loading dashboard data: ' + data.message, 'error');
                     }
                 })
-                .catch(error => console.error('Error loading stats:', error));
-
-            // Load system health
-            loadSystemHealth();
-            
-            // Load recent activity
-            loadRecentActivity();
-            
-            // Load alerts
-            loadSystemAlerts();
+                .catch(error => {
+                    console.error('Error loading dashboard data:', error);
+                    showToast('Error loading dashboard data. Please try again.', 'error');
+                });
         }
 
         function updateMetrics(stats) {
@@ -411,21 +415,10 @@
             document.getElementById('systemErrors').textContent = stats.system_errors || 0;
             
             // Update growth percentages
-            document.getElementById('userGrowth').textContent = stats.user_growth || '0%';
-            document.getElementById('surveyGrowth').textContent = stats.survey_growth || '0%';
-            document.getElementById('avgSessionTime').textContent = stats.avg_session_time || '0';
-            document.getElementById('errorRate').textContent = stats.error_rate || '0%';
-        }
-
-        function loadSystemHealth() {
-            fetch('{% url "admin_api_metrics" %}')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateSystemHealth(data.metrics);
-                    }
-                })
-                .catch(error => console.error('Error loading system health:', error));
+            document.getElementById('userGrowth').textContent = (stats.user_growth || 0) + '%';
+            document.getElementById('surveyGrowth').textContent = (stats.survey_growth || 0) + '%';
+            document.getElementById('avgSessionTime').textContent = stats.avg_session_time || 0;
+            document.getElementById('errorRate').textContent = (stats.error_rate || 0) + '%';
         }
 
         function updateSystemHealth(metrics) {
@@ -453,20 +446,14 @@
             document.getElementById('activeConnections').textContent = metrics.active_connections || 0;
         }
 
-        function loadRecentActivity() {
-            fetch('{% url "admin_api_activities" %}')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        displayRecentActivity(data.activities);
-                    }
-                })
-                .catch(error => console.error('Error loading activities:', error));
-        }
-
         function displayRecentActivity(activities) {
             const container = document.getElementById('activityFeed');
             container.innerHTML = '';
+
+            if (!activities || activities.length === 0) {
+                container.innerHTML = '<div class="text-muted text-center">No recent activity</div>';
+                return;
+            }
 
             activities.forEach(activity => {
                 const activityItem = document.createElement('div');
@@ -477,38 +464,68 @@
                     </div>
                     <div class="activity-content flex-grow-1">
                         <div class="activity-text">${activity.description}</div>
-                        <small class="text-muted">${formatTimeAgo(activity.created_at)}</small>
+                        <small class="text-muted">${formatTimeAgo(activity.created_at)} by ${activity.admin_user}</small>
                     </div>
                 `;
                 container.appendChild(activityItem);
             });
         }
 
-        function loadSystemAlerts() {
-            fetch('{% url "admin_api_notifications" %}')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        displayAlerts(data.notifications);
-                    }
-                })
-                .catch(error => console.error('Error loading alerts:', error));
-        }
-
         function displayAlerts(notifications) {
             const container = document.getElementById('alertsContainer');
             container.innerHTML = '';
 
+            if (!notifications || notifications.length === 0) {
+                container.innerHTML = '<div class="text-muted text-center">No active alerts</div>';
+                return;
+            }
+
             notifications.forEach(notification => {
                 const alertItem = document.createElement('div');
-                alertItem.className = `alert alert-${getAlertType(notification.notification_type)} alert-dismissible fade show`;
+                alertItem.className = `alert alert-${getAlertType(notification.notification_type)} alert-dismissible fade show mb-2`;
                 alertItem.innerHTML = `
                     <strong>${notification.title}</strong>
                     <p class="mb-0">${notification.message}</p>
+                    <small class="text-muted">${formatTimeAgo(notification.created_at)}</small>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 container.appendChild(alertItem);
             });
+        }
+
+        function updatePerformanceMetrics(metrics) {
+            document.getElementById('avgResponseTime').textContent = (metrics.avg_response_time || 0) + 'ms';
+            document.getElementById('uptimePercentage').textContent = (metrics.uptime_percentage || 99.9) + '%';
+            document.getElementById('requestsPerMinute').textContent = metrics.requests_per_minute || 0;
+            document.getElementById('activeConnections').textContent = metrics.active_connections || 0;
+        }
+
+        function updateCharts(userTrends, fileDistribution) {
+            // Update user activity chart
+            if (userActivityChart && userTrends) {
+                userActivityChart.data.labels = userTrends.labels;
+                userActivityChart.data.datasets[0].data = userTrends.active_users;
+                userActivityChart.data.datasets[1].data = userTrends.new_users;
+                userActivityChart.update();
+            }
+
+            // Update file type chart
+            if (fileTypeChart && fileDistribution) {
+                fileTypeChart.data.labels = fileDistribution.labels;
+                fileTypeChart.data.datasets[0].data = fileDistribution.data;
+                fileTypeChart.data.datasets[0].backgroundColor = fileDistribution.colors;
+                fileTypeChart.update();
+            }
+        }
+
+        function updateTopUsers(topUsers) {
+            // This could be used to display top users in a separate section
+            console.log('Top users updated:', topUsers);
+        }
+
+        function updateRealTimeData(realTimeData) {
+            // Update real-time monitoring data
+            console.log('Real-time data updated:', realTimeData);
         }
 
         function initializeCharts() {
@@ -585,17 +602,21 @@
 
         // Quick Actions
         function createBackup() {
-            fetch('{% url "admin_api_backup" %}', {
+            fetch('{% url "admin_api_dashboard" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken')
-                }
+                },
+                body: JSON.stringify({
+                    action: 'create_backup'
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     showToast('Backup created successfully', 'success');
+                    loadDashboardData(); // Refresh dashboard data
                 } else {
                     showToast('Error creating backup: ' + data.message, 'error');
                 }
@@ -606,46 +627,98 @@
         }
 
         function sendNotification() {
-            const message = prompt('Enter notification message:');
-            if (message) {
-                fetch('{% url "admin_api_notifications" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        title: 'System Notification',
-                        message: message,
-                        notification_type: 'info'
+            const title = prompt('Enter notification title:');
+            if (title) {
+                const message = prompt('Enter notification message:');
+                if (message) {
+                    fetch('{% url "admin_api_dashboard" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            action: 'send_notification',
+                            title: title,
+                            message: message,
+                            notification_type: 'info'
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('Notification sent successfully', 'success');
-                    } else {
-                        showToast('Error sending notification: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showToast('Error sending notification: ' + error.message, 'error');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Notification sent successfully', 'success');
+                            loadDashboardData(); // Refresh dashboard data
+                        } else {
+                            showToast('Error sending notification: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showToast('Error sending notification: ' + error.message, 'error');
+                    });
+                }
             }
         }
 
         function scheduleMaintenance() {
-            const message = prompt('Enter maintenance message:');
-            if (message) {
-                showToast('Maintenance scheduled successfully', 'success');
+            const title = prompt('Enter maintenance title:');
+            if (title) {
+                const description = prompt('Enter maintenance description:');
+                if (description) {
+                    fetch('{% url "admin_api_dashboard" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            action: 'schedule_maintenance',
+                            title: title,
+                            description: description
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Maintenance scheduled successfully', 'success');
+                            loadDashboardData(); // Refresh dashboard data
+                        } else {
+                            showToast('Error scheduling maintenance: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showToast('Error scheduling maintenance: ' + error.message, 'error');
+                    });
+                }
             }
         }
 
         function generateReport() {
-            showToast('Report generation started', 'info');
-            setTimeout(() => {
-                showToast('Report generated successfully', 'success');
-            }, 2000);
+            fetch('{% url "admin_api_dashboard" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'generate_report'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Report generated successfully', 'success');
+                    if (data.report_url) {
+                        // Optionally open the report in a new tab
+                        window.open(data.report_url, '_blank');
+                    }
+                } else {
+                    showToast('Error generating report: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Error generating report: ' + error.message, 'error');
+            });
         }
 
         function refreshDashboard() {
@@ -681,7 +754,23 @@
                 'file_uploaded': 'upload',
                 'system_backup': 'database',
                 'login': 'sign-in-alt',
-                'error': 'exclamation-triangle'
+                'error': 'exclamation-triangle',
+                'notification_sent': 'bell',
+                'maintenance_scheduled': 'tools',
+                'report_generated': 'chart-bar',
+                'data_exported': 'download',
+                'setting_updated': 'cog',
+                'cache_cleared': 'broom',
+                'service_restarted': 'sync',
+                'security_scan': 'shield-alt',
+                'system_update': 'download',
+                'log_analyzed': 'search',
+                'performance_check': 'tachometer-alt',
+                'error_resolved': 'check-circle',
+                'backup_restored': 'undo',
+                'user_deleted': 'user-minus',
+                'file_deleted': 'trash',
+                'maintenance_completed': 'check-double'
             };
             return icons[type] || 'info-circle';
         }
@@ -693,7 +782,23 @@
                 'file_uploaded': 'info',
                 'system_backup': 'warning',
                 'login': 'secondary',
-                'error': 'danger'
+                'error': 'danger',
+                'notification_sent': 'info',
+                'maintenance_scheduled': 'warning',
+                'report_generated': 'primary',
+                'data_exported': 'success',
+                'setting_updated': 'secondary',
+                'cache_cleared': 'info',
+                'service_restarted': 'warning',
+                'security_scan': 'success',
+                'system_update': 'primary',
+                'log_analyzed': 'info',
+                'performance_check': 'primary',
+                'error_resolved': 'success',
+                'backup_restored': 'success',
+                'user_deleted': 'danger',
+                'file_deleted': 'danger',
+                'maintenance_completed': 'success'
             };
             return colors[type] || 'muted';
         }
@@ -736,4 +841,24 @@
 
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`
+            toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                    <span>${message}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

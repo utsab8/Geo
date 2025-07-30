@@ -1,8 +1,8 @@
 from django.urls import path
 from .views import (
-    UserDashboardView, UploadsView, MySurveyView, HistoryView, HelpView, ProfileView,
+    UserDashboardView, PublicDashboardView, UploadsView, MySurveyView, HistoryView, HelpView, ProfileView,
     SurveyReportView, SurveyReportAPIView, SurveyExportView, HistoryAPIView, ProfileAPIView,
-    test_css_view, css_test_view, create_sample_history_data
+    test_css_view, css_test_view, create_sample_history_data, test_logout_view
 )
 from .kml_views import (
     KMLUploadView, KMLPreviewView, KMLAjaxView, KMLListView, KMLDeleteView, KMLGeoJSONView
@@ -15,7 +15,8 @@ from .file_views import (
 from . import views, file_views, kml_views
 
 urlpatterns = [
-    path('', UserDashboardView.as_view(), name='user_dashboard'),
+    path('', PublicDashboardView.as_view(), name='user_dashboard'),
+    path('dashboard/', UserDashboardView.as_view(), name='authenticated_dashboard'),
     path('uploads/', UploadsView.as_view(), name='uploads'),
     path('file-preview/', FilePreviewView.as_view(), name='file_preview'),
     path('csv-preview/<uuid:file_id>/', CSVPreviewView.as_view(), name='csv_preview'),
@@ -58,6 +59,7 @@ urlpatterns = [
     path('profile/api/', ProfileAPIView.as_view(), name='profile_api'),
     path('test-css/', test_css_view, name='test_css'),
     path('css-test/', css_test_view, name='css_test'),
+    path('test-logout/', test_logout_view, name='test_logout'),
 ]
 
 urlpatterns += [

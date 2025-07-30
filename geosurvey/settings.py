@@ -201,5 +201,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_URL = '/api/account/login-page/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/dashboard/dashboard/'
 LOGOUT_REDIRECT_URL = '/api/account/login-page/'

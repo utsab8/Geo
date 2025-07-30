@@ -2,10 +2,11 @@ from django.urls import path
 from .views import (
     AdminDashboardView, UsersManagementView, SurveysManagementView,
     SystemManagementView, SettingsManagementView,
-    DashboardStatsAPIView, UsersAPIView, SystemMetricsAPIView,
+    DashboardStatsAPIView, DashboardAPIView, UsersAPIView, SystemMetricsAPIView,
     NotificationsAPIView, BackupAPIView, ActivityAPIView,
     UserActivityAPIView, RealTimeActivityAPIView, UserErrorsAPIView,
-    SurveysAPIView, mark_notification_read, update_system_metrics
+    SurveysAPIView, SurveyFilePreviewAPIView, SurveyFileDownloadAPIView,
+    SystemAPIView, SettingsAPIView, mark_notification_read, update_system_metrics
 )
 
 urlpatterns = [
@@ -17,6 +18,7 @@ urlpatterns = [
     path('settings/', SettingsManagementView.as_view(), name='admin-settings'),
     
     # API endpoints
+    path('api/dashboard/', DashboardAPIView.as_view(), name='admin_api_dashboard'),
     path('api/stats/', DashboardStatsAPIView.as_view(), name='admin_api_stats'),
     path('api/users/', UsersAPIView.as_view(), name='admin_api_users'),
     path('api/users/<int:user_id>/', UsersAPIView.as_view(), name='admin_api_user_detail'),
@@ -33,20 +35,20 @@ urlpatterns = [
     # Survey API endpoints
     path('api/surveys/files/', SurveysAPIView.as_view(), name='admin_api_surveys_files'),
     path('api/surveys/files/<uuid:file_id>/', SurveysAPIView.as_view(), name='admin_api_survey_file_detail'),
-    path('api/surveys/files/<uuid:file_id>/preview/', SurveysAPIView.as_view(), name='admin_api_surveys_file_preview'),
-    path('api/surveys/files/<uuid:file_id>/download/', SurveysAPIView.as_view(), name='admin_api_surveys_file_download'),
-    path('api/surveys/files/<uuid:file_id>/delete/', SurveysAPIView.as_view(), name='admin_api_surveys_file_delete'),
+    path('api/surveys/files/<uuid:file_id>/preview/', SurveyFilePreviewAPIView.as_view(), name='admin_api_surveys_file_preview'),
+    path('api/surveys/files/<uuid:file_id>/download/', SurveyFileDownloadAPIView.as_view(), name='admin_api_surveys_file_download'),
     path('api/surveys/upload/', SurveysAPIView.as_view(), name='admin_api_surveys_upload'),
     
     # Additional API endpoints for system
-    path('api/system/status/', SystemManagementView.as_view(), name='admin_api_system_status'),
-    path('api/system/performance/', SystemManagementView.as_view(), name='admin_api_system_performance'),
-    path('api/system/activity/', SystemManagementView.as_view(), name='admin_api_system_activity'),
-    path('api/system/logs/', SystemManagementView.as_view(), name='admin_api_system_logs'),
-    path('api/system/backup/', SystemManagementView.as_view(), name='admin_api_system_backup'),
-    path('api/system/maintenance/', SystemManagementView.as_view(), name='admin_api_system_maintenance'),
+    path('api/system/', SystemAPIView.as_view(), name='admin_api_system'),
+    path('api/system/status/', SystemAPIView.as_view(), name='admin_api_system_status'),
+    path('api/system/performance/', SystemMetricsAPIView.as_view(), name='admin_api_system_performance'),
+    path('api/system/activity/', SystemAPIView.as_view(), name='admin_api_system_activity'),
+    path('api/system/logs/', SystemAPIView.as_view(), name='admin_api_system_logs'),
+    path('api/system/backup/', SystemAPIView.as_view(), name='admin_api_system_backup'),
+    path('api/system/maintenance/', SystemAPIView.as_view(), name='admin_api_system_maintenance'),
     
     # Additional API endpoints for settings
-    path('api/settings/', SettingsManagementView.as_view(), name='admin_api_settings'),
+    path('api/settings/', SettingsAPIView.as_view(), name='admin_api_settings'),
 ]
 

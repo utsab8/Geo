@@ -286,6 +286,110 @@
         .nav-link.active .nav-indicator {
             transform: translateX(-50%) scaleX(1);
         }
+
+        /* Authentication Buttons */
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .navbar-login-btn,
+        .navbar-signup-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .navbar-login-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .navbar-login-btn:hover {
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .navbar-signup-btn {
+            background: transparent;
+            color: white;
+            border-color: white;
+        }
+
+        .navbar-signup-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-text {
+            display: inline-block;
+        }
+
+        /* Mobile responsive for auth buttons */
+        @media (max-width: 768px) {
+            .auth-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .navbar-login-btn,
+            .navbar-signup-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .btn-text {
+                display: none;
+            }
+        }
+
+        /* Logout button enhancements */
+        .navbar-logout-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-logout-btn:hover {
+            transform: scale(1.1);
+            color: #dc3545;
+        }
+
+        .navbar-logout-btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .navbar-logout-btn::after {
+            content: 'Right-click for quick logout';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .navbar-logout-btn:hover::after {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -293,17 +397,20 @@
     <nav class="top-navbar">
         <div class="navbar-container">
             <div class="navbar-brand">
-                <a href="{% url 'user_dashboard' %}" class="brand-logo">
+                <a href="{% if user.is_authenticated %}{% url 'authenticated_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}" class="brand-logo">
                     <span class="logo-icon"><i class="fas fa-map-marked-alt"></i></span>
                     <h1 class="brand-text">GeoSurvey</h1>
                 </a>
             </div>
             <div class="navbar-menu">
-                <a href="{% url 'user_dashboard' %}" class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                {% if user.is_authenticated %}
+                <a href="{% url 'authenticated_dashboard' %}" class="nav-link {% if request.path == '/dashboard/dashboard/' %}active{% endif %}">
                     <span class="nav-icon"><i class="fas fa-home"></i></span>
                     <span class="nav-text">Dashboard</span>
                     <span class="nav-indicator"></span>
                 </a>
+                {% endif %}
+                {% if user.is_authenticated %}
                 <a href="{% url 'uploads' %}" class="nav-link {% if request.path == '/dashboard/uploads/' %}active{% endif %}">
                     <span class="nav-icon"><i class="fas fa-upload"></i></span>
                     <span class="nav-text">Uploads</span>
@@ -329,8 +436,10 @@
                     <span class="nav-text">Help</span>
                     <span class="nav-indicator"></span>
                 </a>
+                {% endif %}
             </div>
             <div class="navbar-profile">
+                {% if user.is_authenticated %}
                 <div class="profile-dropdown">
                     <a href="{% url 'profile' %}" class="profile-trigger" id="profileTrigger" title="Go to Profile">
                         <div class="profile-avatar">
@@ -342,6 +451,21 @@
                 <button class="navbar-logout-btn" onclick="showLogoutConfirmation()" title="Logout">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
+                <a href="{% url 'logout' %}" class="navbar-logout-link" title="Quick Logout" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+                {% else %}
+                <div class="auth-buttons">
+                    <a href="{% url 'login_page' %}" class="navbar-login-btn" title="Login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span class="btn-text">Login</span>
+                    </a>
+                    <a href="{% url 'signup_page' %}" class="navbar-signup-btn" title="Sign Up">
+                        <i class="fas fa-user-plus"></i>
+                        <span class="btn-text">Sign Up</span>
+                    </a>
+                </div>
+                {% endif %}
             </div>
             <div class="navbar-toggle" id="navbarToggle">
                 <span></span>
@@ -414,6 +538,15 @@
                         this.hideMobileMenu();
                     });
                 });
+
+                // Add right-click context menu for logout
+                const logoutBtn = document.querySelector('.navbar-logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        quickLogout();
+                    });
+                }
             }
 
             setupProfileStatus() {
@@ -434,6 +567,12 @@
                     if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
                         e.preventDefault();
                         showLogoutConfirmation();
+                    }
+                    
+                    // Ctrl/Cmd + Shift + L for quick logout
+                    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'L') {
+                        e.preventDefault();
+                        quickLogout();
                     }
                     
                     // Escape to close dropdowns
@@ -493,19 +632,25 @@
             document.getElementById('logoutModal').classList.remove('show');
         }
 
+        function quickLogout() {
+            // Simple logout without confirmation
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '{% url "logout" %}';
+        }
+
         async function performLogout() {
-            const logoutBtn = document.querySelector('.logout-btn');
+            const logoutBtn = document.querySelector('.navbar-logout-btn');
             const confirmBtn = document.querySelector('.modal-btn.confirm');
             
             // Show loading state
-            logoutBtn.classList.add('loading');
+            if (logoutBtn) logoutBtn.classList.add('loading');
             confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
             confirmBtn.disabled = true;
 
             try {
-                // Clear any stored tokens
-                localStorage.removeItem('access');
-                localStorage.removeItem('refresh');
+                // Clear any stored tokens and data
+                localStorage.clear();
                 sessionStorage.clear();
 
                 // Show success message
@@ -514,15 +659,15 @@
                 // Small delay to show the message
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
-                // Method 1: Try direct redirect to logout URL
-                window.location.href = '/logout/';
+                // Redirect to logout URL
+                window.location.href = '{% url "logout" %}';
 
             } catch (error) {
                 console.error('Logout error:', error);
                 showToast('Logout failed. Please try again.', 'error');
                 
                 // Reset button state
-                logoutBtn.classList.remove('loading');
+                if (logoutBtn) logoutBtn.classList.remove('loading');
                 confirmBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
                 confirmBtn.disabled = false;
             }
@@ -568,11 +713,21 @@
         document.addEventListener('DOMContentLoaded', function() {
             navbarManager = new NavbarManager();
             
-            // Show welcome toast for first-time visitors
-            if (!localStorage.getItem('welcomeShown')) {
+            // Check if user is authenticated
+            const isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+            
+            if (isAuthenticated) {
+                // Show welcome toast for first-time visitors
+                if (!localStorage.getItem('welcomeShown')) {
+                    setTimeout(() => {
+                        showToast('Welcome to GeoSurvey! 🗺️', 'success');
+                        localStorage.setItem('welcomeShown', 'true');
+                    }, 1000);
+                }
+            } else {
+                // Show login prompt for unauthenticated users
                 setTimeout(() => {
-                    showToast('Welcome to GeoSurvey! 🗺️', 'success');
-                    localStorage.setItem('welcomeShown', 'true');
+                    showToast('Please login to access the dashboard', 'info');
                 }, 1000);
             }
         });
