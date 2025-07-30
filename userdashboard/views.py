@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
@@ -3542,3 +3543,532 @@ class HistoryAPIView(LoginRequiredMixin, View):
                 'success': False,
                 'error': f'Error creating sample data: {str(e)}'
             }, status=500)
+
+class ProfileAPIView(LoginRequiredMixin, View):
+    """Fast API view for profile page data and actions"""
+    
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get(self, request):
+        """Get profile data with statistics and completion status"""
+        try:
+            # Get user statistics
+            total_files = FileUpload.objects.filter(user=request.user).count()
+            total_surveys = KMLData.objects.filter(kml_file__user=request.user).count()
+            
+            # Calculate profile completion
+            completion_data = self._calculate_profile_completion(request.user)
+            
+            # Get recent activities
+            recent_activities = self._get_recent_activities(request)
+            
+            # Get user preferences
+            user_preferences = self._get_user_preferences(request.user)
+            
+            # Prepare user data
+            user_data = {
+                'id': request.user.id,
+                'email': request.user.email,
+                'full_name': request.user.full_name or '',
+                'phone_number': request.user.phone_number or '',
+                'date_of_birth': request.user.date_of_birth.isoformat() if request.user.date_of_birth else '',
+                'address': request.user.address or '',
+                'city': request.user.city or '',
+                'state': request.user.state or '',
+                'country': request.user.country or '',
+                'postal_code': request.user.postal_code or '',
+                'avatar_url': request.user.avatar.url if request.user.avatar else '',
+                'github': request.user.github or '',
+                'linkedin': request.user.linkedin or '',
+                'facebook': request.user.facebook or '',
+                'date_joined': request.user.date_joined.isoformat(),
+                'last_login': request.user.last_login.isoformat() if request.user.last_login else '',
+            }
+            
+            response_data = {
+                'success': True,
+                'user': user_data,
+                'statistics': {
+                    'total_files': total_files,
+                    'total_surveys': total_surveys,
+                },
+                'completion': completion_data,
+                'recent_activities': recent_activities,
+                'user_preferences': user_preferences,
+            }
+            
+            return JsonResponse(response_data)
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+    
+    def post(self, request):
+        """Handle profile actions via API"""
+        try:
+            action = request.POST.get('action')
+            
+            if action == 'update_profile':
+                return self._update_profile_api(request)
+            elif action == 'update_social':
+                return self._update_social_api(request)
+            elif action == 'update_settings':
+                return self._update_settings_api(request)
+            elif action == 'change_password':
+                return self._change_password_api(request)
+            elif action == 'upload_avatar':
+                return self._upload_avatar_api(request)
+            elif action == 'delete_account':
+                return self._delete_account_api(request)
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid action'
+                }, status=400)
+                
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+    
+    def _update_profile_api(self, request):
+        """Update profile information via API"""
+        try:
+            # Validate and update profile data
+            data = {
+                'full_name': request.POST.get('full_name', '').strip(),
+                'phone_number': request.POST.get('phone_number', '').strip(),
+                'date_of_birth': request.POST.get('date_of_birth', ''),
+                'address': request.POST.get('address', '').strip(),
+                'city': request.POST.get('city', '').strip(),
+                'state': request.POST.get('state', '').strip(),
+                'country': request.POST.get('country', '').strip(),
+                'postal_code': request.POST.get('postal_code', '').strip(),
+            }
+            
+            # Validate data
+            validation_result = self._validate_profile_data(data)
+            if not validation_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': validation_result['error']
+                }, status=400)
+            
+            # Update user
+            user = request.user
+            for field, value in data.items():
+                if field == 'date_of_birth' and value:
+                    from datetime import datetime
+                    try:
+                        value = datetime.strptime(value, '%Y-%m-%d').date()
+                    except ValueError:
+                        return JsonResponse({
+                            'success': False,
+                            'error': 'Invalid date format'
+                        }, status=400)
+                setattr(user, field, value)
+            
+            user.save()
+            
+            # Log activity
+            self._add_activity(request, 'profile_update')
+            
+            # Get updated completion data
+            completion_data = self._calculate_profile_completion(user)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Profile updated successfully',
+                'completion': completion_data,
+                'user': {
+                    'full_name': user.full_name,
+                    'email': user.email,
+                    'phone_number': user.phone_number,
+                    'date_of_birth': user.date_of_birth.isoformat() if user.date_of_birth else None,
+                    'address': user.address,
+                    'city': user.city,
+                    'state': user.state,
+                    'country': user.country,
+                    'postal_code': user.postal_code,
+                    'github': user.github,
+                    'linkedin': user.linkedin,
+                    'facebook': user.facebook,
+                    'avatar_url': user.avatar.url if user.avatar else None,
+                }
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error updating profile: {str(e)}'
+            }, status=500)
+    
+    def _update_social_api(self, request):
+        """Update social media links via API"""
+        try:
+            data = {
+                'github': request.POST.get('github', '').strip(),
+                'linkedin': request.POST.get('linkedin', '').strip(),
+                'facebook': request.POST.get('facebook', '').strip(),
+            }
+            
+            # Validate social links
+            validation_result = self._validate_social_links(data)
+            if not validation_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': validation_result['error']
+                }, status=400)
+            
+            # Update user
+            user = request.user
+            for field, value in data.items():
+                setattr(user, field, value)
+            user.save()
+            
+            # Log activity
+            self._add_activity(request, 'social_update')
+            
+            # Get updated completion data
+            completion_data = self._calculate_profile_completion(user)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Social links updated successfully',
+                'completion': completion_data
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error updating social links: {str(e)}'
+            }, status=500)
+    
+    def _update_settings_api(self, request):
+        """Update account settings via API"""
+        try:
+            # Get settings data
+            email_notifications = request.POST.get('email_notifications') == 'true'
+            push_notifications = request.POST.get('push_notifications') == 'true'
+            two_factor_auth = request.POST.get('two_factor_auth') == 'true'
+            
+            # Update user preferences (you might want to store these in a separate model)
+            user = request.user
+            # For now, we'll just log the activity
+            self._add_activity(request, 'settings_update')
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Settings updated successfully'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error updating settings: {str(e)}'
+            }, status=500)
+    
+    def _change_password_api(self, request):
+        """Change password via API"""
+        try:
+            current_password = request.POST.get('current_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            # Validate password change
+            validation_result = self._validate_password_change(
+                request.user, current_password, new_password, confirm_password
+            )
+            if not validation_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': validation_result['error']
+                }, status=400)
+            
+            # Change password
+            request.user.set_password(new_password)
+            request.user.save()
+            
+            # Log activity
+            self._add_activity(request, 'password_change')
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Password changed successfully. Please log in again.',
+                'redirect_url': '/login/'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error changing password: {str(e)}'
+            }, status=500)
+    
+    def _upload_avatar_api(self, request):
+        """Upload avatar via API"""
+        try:
+            if 'avatar' not in request.FILES:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No avatar file provided'
+                }, status=400)
+            
+            avatar_file = request.FILES['avatar']
+            
+            # Validate avatar
+            validation_result = self._validate_avatar(avatar_file)
+            if not validation_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': validation_result['error']
+                }, status=400)
+            
+            # Save avatar
+            user = request.user
+            user.avatar = avatar_file
+            user.save()
+            
+            # Log activity
+            self._add_activity(request, 'avatar_upload')
+            
+            # Get updated completion data
+            completion_data = self._calculate_profile_completion(user)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Avatar uploaded successfully',
+                'avatar_url': user.avatar.url,
+                'completion': completion_data
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error uploading avatar: {str(e)}'
+            }, status=500)
+    
+    def _delete_account_api(self, request):
+        """Delete account via API"""
+        try:
+            password = request.POST.get('password')
+            
+            # Verify password
+            if not request.user.check_password(password):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid password'
+                }, status=400)
+            
+            # Delete user data
+            self._delete_user_data(request.user)
+            
+            # Logout user
+            logout(request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Account deleted successfully',
+                'redirect_url': '/login/'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error deleting account: {str(e)}'
+            }, status=500)
+    
+    def _calculate_profile_completion(self, user):
+        """Calculate profile completion percentage with detailed breakdown"""
+        # Personal information fields
+        personal_fields = {
+            'full_name': bool(user.full_name),
+            'phone_number': bool(user.phone_number),
+            'date_of_birth': bool(user.date_of_birth),
+            'address': bool(user.address),
+            'city': bool(user.city),
+            'state': bool(user.state),
+            'country': bool(user.country),
+            'postal_code': bool(user.postal_code),
+            'avatar': bool(user.avatar and user.avatar.url)
+        }
+        
+        # Social media fields
+        social_fields = {
+            'github': bool(user.github),
+            'linkedin': bool(user.linkedin),
+            'facebook': bool(user.facebook)
+        }
+        
+        # Calculate percentages
+        personal_completion = int((sum(personal_fields.values()) / len(personal_fields)) * 100)
+        social_completion = int((sum(social_fields.values()) / len(social_fields)) * 100)
+        
+        # Overall completion (80% personal + 20% social)
+        overall_completion = int((personal_completion * 0.8) + (social_completion * 0.2))
+        
+        # Verification status
+        is_verified = personal_completion == 100 and social_completion == 100
+        
+        return {
+            'profile_completion': overall_completion,
+            'personal_completion': personal_completion,
+            'social_completion': social_completion,
+            'is_verified': is_verified,
+            'personal_fields': personal_fields,
+            'social_fields': social_fields
+        }
+    
+    def _get_recent_activities(self, request):
+        """Get recent user activities"""
+        activities = []
+        
+        # Get recent file uploads
+        recent_files = FileUpload.objects.filter(user=request.user).order_by('-created_at')[:5]
+        for file in recent_files:
+            activities.append({
+                'type': 'upload',
+                'description': f'Uploaded {file.original_filename}',
+                'timestamp': file.created_at.isoformat(),
+                'icon': '📁'
+            })
+        
+        # Get recent survey activities
+        recent_surveys = KMLData.objects.filter(kml_file__user=request.user).order_by('-created_at')[:5]
+        for survey in recent_surveys:
+            activities.append({
+                'type': 'survey',
+                'description': f'Added survey data for {survey.kitta_number or "Unknown"}',
+                'timestamp': survey.created_at.isoformat(),
+                'icon': '🗺️'
+            })
+        
+        # Sort by timestamp and return top 10
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        return activities[:10]
+    
+    def _get_user_preferences(self, user):
+        """Get user preferences"""
+        return {
+            'email_notifications': True,  # Default values
+            'push_notifications': True,
+            'two_factor_auth': False,
+            'theme': 'light',
+            'language': 'en'
+        }
+    
+    def _validate_profile_data(self, data):
+        """Validate profile data"""
+        if data['full_name'] and len(data['full_name']) < 2:
+            return {'valid': False, 'error': 'Full name must be at least 2 characters long'}
+        
+        if data['phone_number'] and not self._is_valid_phone(data['phone_number']):
+            return {'valid': False, 'error': 'Invalid phone number format'}
+        
+        return {'valid': True}
+    
+    def _validate_social_links(self, data):
+        """Validate social media links"""
+        for field, url in data.items():
+            if url and not self._is_valid_url(url):
+                return {'valid': False, 'error': f'Invalid {field} URL format'}
+        
+        return {'valid': True}
+    
+    def _validate_password_change(self, user, current_password, new_password, confirm_password):
+        """Validate password change"""
+        if not user.check_password(current_password):
+            return {'valid': False, 'error': 'Current password is incorrect'}
+        
+        if new_password != confirm_password:
+            return {'valid': False, 'error': 'New passwords do not match'}
+        
+        if not self._is_strong_password(new_password):
+            return {'valid': False, 'error': 'Password must be at least 8 characters with uppercase, lowercase, number, and special character'}
+        
+        return {'valid': True}
+    
+    def _validate_avatar(self, avatar):
+        """Validate avatar file"""
+        if avatar.size > 5 * 1024 * 1024:  # 5MB limit
+            return {'valid': False, 'error': 'Avatar file size must be less than 5MB'}
+        
+        if not self._is_valid_image_extension(avatar.name):
+            return {'valid': False, 'error': 'Invalid image format. Use JPG, PNG, or GIF'}
+        
+        return {'valid': True}
+    
+    def _delete_user_data(self, user):
+        """Delete all user data"""
+        # Delete files
+        FileUpload.objects.filter(user=user).delete()
+        
+        # Delete KML files
+        KMLFile.objects.filter(user=user).delete()
+        
+        # Delete survey data
+        KMLData.objects.filter(kml_file__user=user).delete()
+        
+        # Delete uploaded parcels
+        UploadedParcel.objects.filter(user=user).delete()
+        
+        # Delete history logs
+        SurveyHistoryLog.objects.filter(user=user).delete()
+        
+        # Delete user
+        user.delete()
+    
+    def _add_activity(self, request, activity_type):
+        """Add activity log"""
+        try:
+            log_survey_activity(
+                user=request.user,
+                action_type='profile_update',
+                description=self._get_activity_description(activity_type)
+            )
+        except Exception as e:
+            print(f"Error logging activity: {e}")
+    
+    def _get_activity_description(self, activity_type):
+        """Get activity description"""
+        descriptions = {
+            'profile_update': 'Updated profile information',
+            'social_update': 'Updated social media links',
+            'settings_update': 'Updated account settings',
+            'password_change': 'Changed password',
+            'avatar_upload': 'Uploaded new avatar'
+        }
+        return descriptions.get(activity_type, 'Profile activity')
+    
+    def _is_valid_phone(self, phone):
+        """Validate phone number"""
+        import re
+        phone_pattern = r'^\+?1?\d{9,15}$'
+        return bool(re.match(phone_pattern, phone))
+    
+    def _is_valid_url(self, url):
+        """Validate URL"""
+        import re
+        url_pattern = r'^https?://(?:[-\w.])+(?:[:\d]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:#(?:[\w.])*)?)?$'
+        return bool(re.match(url_pattern, url))
+    
+    def _is_valid_image_extension(self, filename):
+        """Validate image file extension"""
+        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+        return any(filename.lower().endswith(ext) for ext in allowed_extensions)
+    
+    def _is_strong_password(self, password):
+        """Validate password strength"""
+        if len(password) < 8:
+            return False
+        
+        has_upper = any(c.isupper() for c in password)
+        has_lower = any(c.islower() for c in password)
+        has_digit = any(c.isdigit() for c in password)
+        has_special = any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?' for c in password)
+        
+        return has_upper and has_lower and has_digit and has_special

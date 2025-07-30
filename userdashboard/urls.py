@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     UserDashboardView, UploadsView, MySurveyView, HistoryView, HelpView, ProfileView,
-    SurveyReportView, SurveyReportAPIView, SurveyExportView, HistoryAPIView,
+    SurveyReportView, SurveyReportAPIView, SurveyExportView, HistoryAPIView, ProfileAPIView,
     test_css_view, css_test_view, create_sample_history_data
 )
 from .kml_views import (
@@ -55,6 +55,7 @@ urlpatterns = [
     path('history/test/', create_sample_history_data, name='test_history'),
     path('help/', HelpView.as_view(), name='help'),
     path('profile/', ProfileView.as_view(), name='profile'),
+    path('profile/api/', ProfileAPIView.as_view(), name='profile_api'),
     path('test-css/', test_css_view, name='test_css'),
     path('css-test/', css_test_view, name='css_test'),
 ]

@@ -24,7 +24,6 @@
         align-items: flex-start;
         flex-wrap: wrap;
         gap: 20px;
-        overflow: visible;
     }
 
     .profile-header-content {
@@ -32,7 +31,6 @@
         align-items: center;
         gap: 30px;
         flex: 1;
-        min-width: 0;
     }
 
     .profile-avatar-section {
@@ -43,62 +41,17 @@
         position: relative;
         width: 120px;
         height: 120px;
-        border-radius: 50% !important;
+        border-radius: 50%;
         overflow: hidden;
         border: 4px solid #4f46e5;
-        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        aspect-ratio: 1 / 1;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
     }
 
-    .profile-avatar-container:hover {
-        transform: scale(1.05);
-        box-shadow: 0 20px 50px rgba(79, 70, 229, 0.6);
-    }
-
-    /* Ensure circular shape is maintained */
-    .profile-avatar-container * {
-        border-radius: 50% !important;
-    }
-
-    /* Force circular shape for all avatar elements */
-    .profile-avatar-container img,
-    .profile-avatar-container div {
-        border-radius: 50% !important;
-        overflow: hidden;
-    }
-
-    /* Ensure aspect ratio is maintained */
-    .profile-avatar-container {
-        aspect-ratio: 1 / 1;
-    }
-
-    /* Force perfect circular shape - prevent oval appearance */
-    .profile-avatar-container,
-    .profile-avatar-container *,
-    .profile-avatar,
-    .avatar-initials {
-        border-radius: 50% !important;
-        overflow: hidden;
-    }
-
-    /* Ensure image maintains circular shape */
     .profile-avatar {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center;
-        border-radius: 50% !important;
         transition: transform 0.3s ease;
-        display: block;
-        max-width: 100%;
-        max-height: 100%;
-        min-width: 100%;
-        min-height: 100%;
     }
 
     .avatar-overlay {
@@ -122,100 +75,19 @@
 
     .avatar-upload-btn {
         color: white;
-        font-size: 20px;
+        font-size: 24px;
         cursor: pointer;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 8px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
-
-    .avatar-upload-btn:hover {
-        background: rgba(0, 0, 0, 0.9);
-        transform: scale(1.15);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    .avatar-initials {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 3rem;
-        font-weight: 700;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        letter-spacing: 2px;
-        font-family: 'Inter', sans-serif;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .profile-info-section {
         flex: 1;
-        min-width: 0;
-        overflow: hidden;
-    }
-
-    /* Responsive design for smaller screens */
-    @media (max-width: 768px) {
-        .profile-avatar-container {
-            width: 100px;
-            height: 100px;
-            border-width: 3px;
-        }
-        
-        .avatar-initials {
-            font-size: 2.5rem;
-            letter-spacing: 1px;
-        }
-        
-        .avatar-upload-btn {
-            font-size: 16px;
-            padding: 6px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .profile-avatar-container {
-            width: 80px;
-            height: 80px;
-            border-width: 2px;
-        }
-        
-        .avatar-initials {
-            font-size: 2rem;
-            letter-spacing: 1px;
-        }
-        
-        .avatar-upload-btn {
-            font-size: 14px;
-            padding: 5px;
-        }
     }
 
     .profile-name {
-        font-size: 2.5rem;
-        font-weight: 800;
+        font-size: 2rem;
+        font-weight: 700;
         color: #1f2937;
-        margin: 0 0 15px 0;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        line-height: 1.2;
-        letter-spacing: -0.5px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal;
-        max-width: 100%;
-        display: block;
-        min-height: 3rem;
-        overflow: visible;
-        text-overflow: unset;
+        margin: 0 0 10px 0;
     }
 
     .profile-email {
@@ -319,55 +191,29 @@
     .profile-navigation {
         display: flex;
         justify-content: center;
-        gap: 20px;
+        gap: 15px;
         margin-bottom: 30px;
         flex-wrap: wrap;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        backdrop-filter: blur(10px);
     }
 
     .nav-dot {
-        width: 50px;
-        height: 50px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
-        background: #f3f4f6;
+        background: #d1d5db;
         cursor: pointer;
         transition: all 0.3s ease;
         position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid #e5e7eb;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .nav-dot i {
-        font-size: 18px;
-        color: #6b7280;
-        transition: all 0.3s ease;
     }
 
     .nav-dot.active {
         background: #4f46e5;
-        transform: scale(1.1);
-        border-color: #4f46e5;
-        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-    }
-
-    .nav-dot.active i {
-        color: white;
+        transform: scale(1.2);
     }
 
     .nav-dot:hover {
         background: #6366f1;
-        transform: scale(1.05);
-        border-color: #6366f1;
-    }
-
-    .nav-dot:hover i {
-        color: white;
+        transform: scale(1.1);
     }
 
     .nav-dot::after {
@@ -641,11 +487,6 @@
             text-align: center;
         }
 
-        .profile-name {
-            font-size: 2rem;
-            text-align: center;
-        }
-
         .profile-stats {
             justify-content: center;
         }
@@ -656,17 +497,6 @@
 
         .overview-grid {
             grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .profile-name {
-            font-size: 1.8rem;
-        }
-        
-        .profile-avatar-container {
-            width: 150px;
-            height: 150px;
         }
     }
 </style>
@@ -747,27 +577,13 @@
 
         <!-- Profile Navigation -->
         <div class="profile-navigation">
-            <div class="nav-dot active" data-section="profile-overview" title="Overview">
-                <i class="fas fa-home"></i>
-            </div>
-            <div class="nav-dot" data-section="profile-details" title="Personal Info">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="nav-dot" data-section="social-links" title="Social Links">
-                <i class="fas fa-share-alt"></i>
-            </div>
-            <div class="nav-dot" data-section="account-settings" title="Settings">
-                <i class="fas fa-cog"></i>
-            </div>
-            <div class="nav-dot" data-section="password-section" title="Security">
-                <i class="fas fa-lock"></i>
-            </div>
-            <div class="nav-dot" data-section="activity-section" title="Activity">
-                <i class="fas fa-history"></i>
-            </div>
-            <div class="nav-dot" data-section="danger-zone" title="Danger Zone">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
+            <div class="nav-dot active" data-section="profile-overview" title="Overview"></div>
+            <div class="nav-dot" data-section="profile-details" title="Personal Info"></div>
+            <div class="nav-dot" data-section="social-links" title="Social Links"></div>
+            <div class="nav-dot" data-section="account-settings" title="Settings"></div>
+            <div class="nav-dot" data-section="password-section" title="Security"></div>
+            <div class="nav-dot" data-section="activity-section" title="Activity"></div>
+            <div class="nav-dot" data-section="danger-zone" title="Danger Zone"></div>
         </div>
 
         <!-- Profile Content -->
@@ -993,7 +809,6 @@
             .then(response => response.json())
             .then(data => {
                 hideLoading();
-                console.log('Profile data received:', data); // Debug log
                 if (data.success) {
                     profileData = data;
                     updateProfileUI(data);
@@ -1011,36 +826,18 @@
     function updateProfileUI(data) {
         const user = data.user;
         
-        // Update header information with full name
-        const fullName = user.full_name || user.email;
-        const profileNameElement = document.getElementById('profile-name');
-        profileNameElement.textContent = fullName;
-        profileNameElement.title = fullName; // Add tooltip for full name
-        console.log('Setting profile name to:', fullName); // Debug log
-        
+        // Update header information
+        document.getElementById('profile-name').textContent = user.full_name || user.email;
         document.getElementById('profile-email').textContent = user.email;
         document.getElementById('total-files').textContent = data.statistics.total_files;
         document.getElementById('total-surveys').textContent = data.statistics.total_surveys;
         
-        // Update avatar with full name initials if no avatar
+        // Update avatar
         const avatarPreview = document.getElementById('profile-avatar-preview');
         if (user.avatar_url) {
             avatarPreview.src = user.avatar_url;
-            avatarPreview.style.display = 'block';
         } else {
-            // Create initials from full name
-            const initials = getInitials(fullName);
-            avatarPreview.style.display = 'none';
-            
-            // Create initials display
-            const avatarContainer = document.querySelector('.profile-avatar-container');
-            let initialsDiv = avatarContainer.querySelector('.avatar-initials');
-            if (!initialsDiv) {
-                initialsDiv = document.createElement('div');
-                initialsDiv.className = 'avatar-initials';
-                avatarContainer.appendChild(initialsDiv);
-            }
-            initialsDiv.textContent = initials;
+            avatarPreview.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iNjAiIGZpbGw9IiM2QjcyOEIiLz4KPGNpcmNsZSBjeD0iNjAiIGN5PSI0NSIgcj0iMjAiIGZpbGw9IiNEOUQ5RDkiLz4KPHBhdGggZD0iTTIwIDEwNUMyMCA5NS4wNTc2IDI4LjA1NzYgODcgMzggODdIODJDNzEuOTQyNCA4NyA2NCA5NS4wNTc2IDY0IDEwNUg2NEM2NCA5NS4wNTc2IDU1Ljk0MjQgODcgNDUgODdIMzhDMjguMDU3NiA4NyAyMCA5NS4wNTc2IDIwIDEwNVoiIGZpbGw9IiNEOUQ5RDkiLz4KPC9zdmc+Cg==';
         }
         
         // Update completion status
@@ -1210,19 +1007,6 @@
         .then(data => {
             if (data.success) {
                 showSuccess(data.message);
-                // Update the profile name display if it was changed
-                if (data.user && data.user.full_name) {
-                    document.getElementById('profile-name').textContent = data.user.full_name;
-                    // Update initials if no avatar
-                    const avatarPreview = document.getElementById('profile-avatar-preview');
-                    if (avatarPreview.style.display === 'none') {
-                        const initials = getInitials(data.user.full_name);
-                        const initialsDiv = document.querySelector('.avatar-initials');
-                        if (initialsDiv) {
-                            initialsDiv.textContent = initials;
-                        }
-                    }
-                }
                 if (data.completion) {
                     updateCompletionStatus(data.completion);
                 }
@@ -1352,16 +1136,7 @@
         .then(data => {
             if (data.success) {
                 showSuccess(data.message);
-                const avatarPreview = document.getElementById('profile-avatar-preview');
-                avatarPreview.src = data.avatar_url;
-                avatarPreview.style.display = 'block';
-                
-                // Remove initials if they exist
-                const initialsDiv = document.querySelector('.avatar-initials');
-                if (initialsDiv) {
-                    initialsDiv.remove();
-                }
-                
+                document.getElementById('profile-avatar-preview').src = data.avatar_url;
                 if (data.completion) {
                     updateCompletionStatus(data.completion);
                 }
@@ -1447,18 +1222,6 @@
         setTimeout(() => {
             messageDiv.remove();
         }, 5000);
-    }
-
-    // Get initials from full name
-    function getInitials(name) {
-        if (!name) return 'U';
-        
-        const words = name.trim().split(' ');
-        if (words.length === 1) {
-            return words[0].charAt(0).toUpperCase();
-        } else {
-            return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
-        }
     }
 
     // Get CSRF token

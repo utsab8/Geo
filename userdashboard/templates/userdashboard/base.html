@@ -294,64 +294,54 @@
         <div class="navbar-container">
             <div class="navbar-brand">
                 <a href="{% url 'user_dashboard' %}" class="brand-logo">
-                    <span class="logo-icon">🗺️</span>
+                    <span class="logo-icon"><i class="fas fa-map-marked-alt"></i></span>
                     <h1 class="brand-text">GeoSurvey</h1>
                 </a>
             </div>
             <div class="navbar-menu">
                 <a href="{% url 'user_dashboard' %}" class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
-                    <span class="nav-icon">🏠</span>
+                    <span class="nav-icon"><i class="fas fa-home"></i></span>
                     <span class="nav-text">Dashboard</span>
                     <span class="nav-indicator"></span>
                 </a>
                 <a href="{% url 'uploads' %}" class="nav-link {% if request.path == '/dashboard/uploads/' %}active{% endif %}">
-                    <span class="nav-icon">📤</span>
+                    <span class="nav-icon"><i class="fas fa-upload"></i></span>
                     <span class="nav-text">Uploads</span>
                     <span class="nav-indicator"></span>
                 </a>
                 <a href="{% url 'my_survey' %}" class="nav-link {% if request.path == '/dashboard/my-survey/' %}active{% endif %}">
-                    <span class="nav-icon">📋</span>
+                    <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
                     <span class="nav-text">My Survey</span>
                     <span class="nav-indicator"></span>
                 </a>
                 <a href="{% url 'survey_report' %}" class="nav-link {% if request.path == '/dashboard/survey-report/' %}active{% endif %}">
-                    <span class="nav-icon">📊</span>
+                    <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
                     <span class="nav-text">Survey Report</span>
                     <span class="nav-indicator"></span>
                 </a>
                 <a href="{% url 'history' %}" class="nav-link {% if request.path == '/dashboard/history/' %}active{% endif %}">
-                    <span class="nav-icon">🕑</span>
+                    <span class="nav-icon"><i class="fas fa-history"></i></span>
                     <span class="nav-text">History</span>
                     <span class="nav-indicator"></span>
                 </a>
                 <a href="{% url 'help' %}" class="nav-link {% if request.path == '/dashboard/help/' %}active{% endif %}">
-                    <span class="nav-icon">❓</span>
+                    <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
                     <span class="nav-text">Help</span>
                     <span class="nav-indicator"></span>
                 </a>
             </div>
             <div class="navbar-profile">
                 <div class="profile-dropdown">
-                    <div class="profile-trigger" id="profileTrigger">
+                    <a href="{% url 'profile' %}" class="profile-trigger" id="profileTrigger" title="Go to Profile">
                         <div class="profile-avatar">
-                            <img src="{% if user.avatar and user.avatar.url %}{{ user.avatar.url }}{% else %}data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiM2QjcyOEIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNSIgcj0iNiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNyAzNUMyNyAzNSAyNyAzNSAyNyAzNUgyN0MyNyAzNSAyNyAzNSAyNyAzNUg3WiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K{% endif %}" alt="Profile" class="profile-avatar-img">
+                            <img src="{% if user.avatar and user.avatar.url %}{{ user.avatar.url }}{% else %}data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiM2QjcyOEIiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNSIgcj0iNiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K{% endif %}" alt="Profile" class="profile-avatar-img">
                             <div class="profile-status" id="profileStatus"></div>
                         </div>
-                        <span class="profile-name" id="profileName">{{ user.full_name|default:user.email }}</span>
-                        <span class="dropdown-arrow">▼</span>
-                    </div>
-                    <div class="dropdown-menu" id="profileDropdown">
-                        <a href="{% url 'profile' %}" class="dropdown-item">
-                            <span class="dropdown-icon">👤</span>
-                            Profile Settings
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <button class="dropdown-item logout-btn" onclick="showLogoutConfirmation()">
-                            <span class="dropdown-icon"><i class="fas fa-sign-out-alt"></i></span>
-                            Logout
-                        </button>
-                    </div>
+                    </a>
                 </div>
+                <button class="navbar-logout-btn" onclick="showLogoutConfirmation()" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </div>
             <div class="navbar-toggle" id="navbarToggle">
                 <span></span>
@@ -396,11 +386,9 @@
         class NavbarManager {
             constructor() {
                 this.profileTrigger = document.getElementById('profileTrigger');
-                this.profileDropdown = document.getElementById('profileDropdown');
                 this.navbarToggle = document.getElementById('navbarToggle');
                 this.navbarMenu = document.querySelector('.navbar-menu');
                 this.profileStatus = document.getElementById('profileStatus');
-                this.profileName = document.getElementById('profileName');
                 
                 this.init();
             }
@@ -413,23 +401,12 @@
             }
 
             setupEventListeners() {
-                // Profile dropdown toggle
-                this.profileTrigger.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.toggleProfileDropdown();
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('.profile-dropdown')) {
-                        this.hideProfileDropdown();
-                    }
-                });
-
                 // Mobile menu toggle
-                this.navbarToggle.addEventListener('click', () => {
-                    this.toggleMobileMenu();
-                });
+                if (this.navbarToggle) {
+                    this.navbarToggle.addEventListener('click', () => {
+                        this.toggleMobileMenu();
+                    });
+                }
 
                 // Close mobile menu when clicking on a link
                 document.querySelectorAll('.nav-link').forEach(link => {
@@ -437,29 +414,18 @@
                         this.hideMobileMenu();
                     });
                 });
-
-                // Enhanced hover effects for dropdown
-                this.profileTrigger.addEventListener('mouseenter', () => {
-                    if (window.innerWidth > 768) {
-                        this.showProfileDropdown();
-                    }
-                });
-
-                this.profileDropdown.addEventListener('mouseleave', () => {
-                    if (window.innerWidth > 768) {
-                        this.hideProfileDropdown();
-                    }
-                });
             }
 
             setupProfileStatus() {
                 // Simulate online status (in real app, this would come from backend)
-                this.profileStatus.classList.add('online');
-                
-                // Add status indicator animation
-                setInterval(() => {
-                    this.profileStatus.style.animation = 'pulse 2s infinite';
-                }, 5000);
+                if (this.profileStatus) {
+                    this.profileStatus.classList.add('online');
+                    
+                    // Add status indicator animation
+                    setInterval(() => {
+                        this.profileStatus.style.animation = 'pulse 2s infinite';
+                    }, 5000);
+                }
             }
 
             setupKeyboardShortcuts() {
@@ -480,12 +446,6 @@
             }
 
             setupAnimations() {
-                // Add staggered animation to dropdown items
-                const dropdownItems = this.profileDropdown.querySelectorAll('.dropdown-item');
-                dropdownItems.forEach((item, index) => {
-                    item.style.setProperty('--item-index', index);
-                });
-
                 // Add hover animations to nav links
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.addEventListener('mouseenter', () => {
@@ -499,21 +459,18 @@
             }
 
             toggleProfileDropdown() {
-                if (this.profileDropdown.classList.contains('show')) {
-                    this.hideProfileDropdown();
-                } else {
-                    this.showProfileDropdown();
-                }
+                // Profile trigger is now a direct link, no dropdown needed
+                return;
             }
 
             showProfileDropdown() {
-                this.profileDropdown.classList.add('show');
-                this.profileTrigger.querySelector('.dropdown-arrow').style.transform = 'rotate(180deg)';
+                // Profile trigger is now a direct link, no dropdown needed
+                return;
             }
 
             hideProfileDropdown() {
-                this.profileDropdown.classList.remove('show');
-                this.profileTrigger.querySelector('.dropdown-arrow').style.transform = 'rotate(0deg)';
+                // Profile trigger is now a direct link, no dropdown needed
+                return;
             }
 
             toggleMobileMenu() {
@@ -530,8 +487,6 @@
         // Enhanced Logout Functionality
         function showLogoutConfirmation() {
             document.getElementById('logoutModal').classList.add('show');
-            // Close dropdown
-            navbarManager.hideProfileDropdown();
         }
 
         function hideLogoutConfirmation() {
