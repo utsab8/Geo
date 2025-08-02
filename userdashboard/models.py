@@ -88,7 +88,7 @@ class FileUpload(models.Model):
         return self.file_type in ['kml', 'csv', 'shapefile', 'geojson']
     
     def get_absolute_url(self):
-        return f'/dashboard/uploads/{self.id}/'
+        return f'/user-dashboard/uploads/{self.id}/'
     
     def increment_download_count(self):
         self.download_count += 1

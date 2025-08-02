@@ -45,7 +45,6 @@ urlpatterns = [
     path('api/account/', include('account.urls')),
     
     # User dashboard (after login)
-    path('dashboard/', include('userdashboard.urls')),
     path('user-dashboard/', include('userdashboard.urls')),
     
     # Admin dashboard (for admin users)

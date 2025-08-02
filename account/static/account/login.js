@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Redirect after a brief delay
                 setTimeout(() => {
-                    window.location.href = data.redirect_url || '/dashboard/';
+                    window.location.href = data.redirect_url || '/user-dashboard/';
                 }, 1000);
             } else {
                 hideLoading();

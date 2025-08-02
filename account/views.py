@@ -26,9 +26,9 @@ class LoginPageView(View):
             if request.user.is_staff:
                 return redirect('/admin-dashboard/')
             else:
-                return redirect('/dashboard/')
+                return redirect('/user-dashboard/')
         
-        next_url = request.GET.get('next', '/dashboard/')
+        next_url = request.GET.get('next', '/user-dashboard/')
         return render(request, 'account/login.html', {'next': next_url})
 
 class SignupPageView(View):
@@ -38,7 +38,7 @@ class SignupPageView(View):
             if request.user.is_staff:
                 return redirect('/admin-dashboard/')
             else:
-                return redirect('/dashboard/')
+                return redirect('/user-dashboard/')
         return render(request, 'account/signup.html')
 
 class SignupView(APIView):
@@ -65,14 +65,14 @@ class LoginView(APIView):
             django_login(request, user)
             
             # Determine redirect URL based on user type and permissions
-            next_url = request.data.get('next', '/dashboard/')
+            next_url = request.data.get('next', '/user-dashboard/')
             
             # Check if user is admin/staff
             if user.is_staff:
                 redirect_url = '/admin-dashboard/'
             else:
                 # Regular users go to user dashboard
-                redirect_url = next_url if next_url != '/api/account/login-page/' else '/dashboard/'
+                redirect_url = next_url if next_url != '/api/account/login-page/' else '/user-dashboard/'
             
             return Response({
                 'user': {

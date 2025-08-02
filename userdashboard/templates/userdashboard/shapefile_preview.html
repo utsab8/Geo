@@ -948,7 +948,7 @@ function loadShapefileDataToMap() {
     
     mapLoading.style.display = 'flex';
     
-    fetch(`/dashboard/shapefile/geojson/${fileId}/`)
+    fetch(`/user-dashboard/shapefile/geojson/${fileId}/`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);

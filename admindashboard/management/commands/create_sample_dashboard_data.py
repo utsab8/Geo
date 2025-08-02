@@ -185,7 +185,7 @@ class Command(BaseCommand):
     
     def create_sample_pageviews(self, users, count):
         """Create sample page views"""
-        pages = ['/dashboard/', '/uploads/', '/profile/', '/history/', '/help/', '/settings/']
+        pages = ['/user-dashboard/', '/uploads/', '/profile/', '/history/', '/help/', '/settings/']
         page_names = ['Dashboard', 'Uploads', 'Profile', 'History', 'Help', 'Settings']
         
         for i in range(count):
@@ -233,7 +233,7 @@ class Command(BaseCommand):
                 error_type=error_type,
                 error_message=f'Sample {error_type} message {i+1}',
                 error_details={'sample': True, 'stack_trace': f'Traceback (most recent call last):\n  File "sample.py", line {random.randint(1, 100)}, in sample_function\n    raise Exception("Sample error")'},
-                page_url='/dashboard/',
+                page_url='/user-dashboard/',
                 ip_address='127.0.0.1',
                 user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             )

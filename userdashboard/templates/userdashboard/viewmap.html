@@ -580,7 +580,7 @@
         document.getElementById('dataStatus').innerHTML = '<div class="loading-spinner"></div> Loading...';
         
         const queryString = new URLSearchParams(filters).toString();
-        const url = `/dashboard/viewmap/data/${queryString ? '?' + queryString : ''}`;
+        const url = `/user-dashboard/viewmap/data/${queryString ? '?' + queryString : ''}`;
         
         console.log('🔍 Making request to:', url);
         
@@ -762,7 +762,7 @@
             });
             
             const queryString = new URLSearchParams(filters).toString();
-            const url = `/dashboard/viewmap/export/pdf/${queryString ? '?' + queryString : ''}`;
+            const url = `/user-dashboard/viewmap/export/pdf/${queryString ? '?' + queryString : ''}`;
             
             window.open(url, '_blank');
             

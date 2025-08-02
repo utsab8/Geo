@@ -1,0 +1,709 @@
+{% extends 'userdashboard/base.html' %}
+{% load static %}
+
+{% block title %}File Statistics - GeoSurveyPro{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Beautiful White Background Design */
+    body {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+        min-height: 100vh;
+    }
+    
+    .main-content {
+        background: transparent;
+        padding: 2rem 0;
+    }
+    
+    /* Enhanced Stats Cards */
+    .stats-card {
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        border-color: #cbd5e1;
+    }
+    
+    .stats-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+        border-radius: 20px;
+    }
+    
+    /* File Type Cards */
+    .file-type-card {
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .file-type-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .file-type-card:hover {
+        transform: translateX(8px) scale(1.02);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
+    }
+    
+    .file-type-card:hover::before {
+        width: 8px;
+    }
+    
+    /* Recent File Items */
+    .recent-file-item {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .recent-file-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .recent-file-item:hover {
+        transform: translateX(6px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
+    }
+    
+    .recent-file-item:hover::before {
+        width: 6px;
+    }
+    
+    /* File Type Icons */
+    .file-type-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        margin-right: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .file-type-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+        border-radius: 12px;
+    }
+    
+    /* Chart Container */
+    .chart-container {
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .chart-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    /* Enhanced Progress Bars */
+    .progress {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border-radius: 10px;
+        height: 8px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-bar {
+        border-radius: 10px;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    /* Enhanced Buttons */
+    .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+        background: transparent;
+    }
+    
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .btn-outline-secondary {
+        border: 2px solid #64748b;
+        color: #64748b;
+        background: transparent;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #64748b;
+        color: white;
+        border-color: #64748b;
+    }
+    
+    /* Enhanced Typography */
+    .page-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-title {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        color: #64748b;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.875rem;
+    }
+    
+    .stats-description {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    /* Enhanced Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state-title {
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state-description {
+        color: #94a3b8;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-card {
+            padding: 1.5rem;
+        }
+        
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .chart-container {
+            padding: 1.5rem;
+        }
+    }
+    
+    /* Smooth Animations */
+    .fade-in {
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .slide-in-left {
+        animation: slideInLeft 0.6s ease-out;
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="fade-in">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-bar me-3"></i>
+                            File Statistics
+                        </h1>
+                        <p class="text-muted mb-0">Comprehensive overview of your uploaded files and storage usage</p>
+                    </div>
+                    <div class="slide-in-left">
+                        <a href="{% url 'file_upload' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-upload me-2"></i>Upload New File
+                        </a>
+                        <a href="{% url 'file_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>View All Files
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Statistics Cards -->
+        <div class="row mb-5">
+            <div class="col-xl-3 col-md-6 mb-4 fade-in">
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stats-number">{{ stats.total_files }}</div>
+                    <div class="stats-label">Total Files</div>
+                    <div class="stats-description">
+                        <i class="fas fa-arrow-up text-success me-1"></i>
+                        All your uploaded files
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4 fade-in">
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <i class="fas fa-hdd"></i>
+                    </div>
+                    <div class="stats-number">{{ stats.total_size_mb }} MB</div>
+                    <div class="stats-label">Total Size</div>
+                    <div class="stats-description">
+                        <i class="fas fa-database text-info me-1"></i>
+                        Storage space used
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4 fade-in">
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <div class="stats-number">{{ stats.files_by_type.csv|default:0 }}</div>
+                    <div class="stats-label">CSV Files</div>
+                    <div class="stats-description">
+                        <i class="fas fa-table text-warning me-1"></i>
+                        Spreadsheet data files
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4 fade-in">
+                <div class="stats-card">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <i class="fas fa-map"></i>
+                    </div>
+                    <div class="stats-number">{{ stats.files_by_type.kml|default:0 }}</div>
+                    <div class="stats-label">KML Files</div>
+                    <div class="stats-description">
+                        <i class="fas fa-globe text-info me-1"></i>
+                        Geographic data files
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- File Type Distribution -->
+            <div class="col-lg-8 mb-4 slide-in-left">
+                <div class="chart-container">
+                    <h5 class="section-title">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        File Type Distribution
+                    </h5>
+                    
+                    {% if stats.files_by_type %}
+                        <div class="row">
+                            {% for file_type, count in stats.files_by_type.items %}
+                            <div class="col-md-6 mb-3">
+                                <div class="file-type-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="file-type-icon 
+                                            {% if file_type == 'csv' %}bg-success
+                                            {% elif file_type == 'kml' %}bg-info
+                                            {% elif file_type == 'shapefile' %}bg-warning
+                                            {% else %}bg-secondary{% endif %}">
+                                            <i class="fas 
+                                                {% if file_type == 'csv' %}fa-file-csv
+                                                {% elif file_type == 'kml' %}fa-map
+                                                {% elif file_type == 'shapefile' %}fa-layer-group
+                                                {% else %}fa-file{% endif %}"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-2 text-capitalize fw-bold">{{ file_type }} Files</h6>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="text-muted fw-medium">{{ count }} files</span>
+                                                <div class="progress flex-grow-1 mx-3" style="height: 8px;">
+                                                    <div class="progress-bar 
+                                                        {% if file_type == 'csv' %}bg-success
+                                                        {% elif file_type == 'kml' %}bg-info
+                                                        {% elif file_type == 'shapefile' %}bg-warning
+                                                        {% else %}bg-secondary{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {% widthratio count stats.total_files 100 %}%">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted fw-bold">{% widthratio count stats.total_files 100 %}%</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <h6 class="empty-state-title">No files uploaded yet</h6>
+                            <p class="empty-state-description">Upload your first file to see statistics here</p>
+                            <a href="{% url 'file_upload' %}" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Upload First File
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Uploads -->
+            <div class="col-lg-4 mb-4 slide-in-left">
+                <div class="chart-container">
+                    <h5 class="section-title">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        Recent Uploads
+                    </h5>
+                    
+                    {% if stats.recent_uploads %}
+                        <div class="recent-uploads">
+                            {% for file in stats.recent_uploads %}
+                            <div class="recent-file-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="file-type-icon 
+                                        {% if file.file_type == 'csv' %}bg-success
+                                        {% elif file.file_type == 'kml' %}bg-info
+                                        {% elif file.file_type == 'shapefile' %}bg-warning
+                                        {% else %}bg-secondary{% endif %}">
+                                        <i class="fas 
+                                            {% if file.file_type == 'csv' %}fa-file-csv
+                                            {% elif file.file_type == 'kml' %}fa-map
+                                            {% elif file.file_type == 'shapefile' %}fa-layer-group
+                                            {% else %}fa-file{% endif %}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 text-truncate fw-bold">{{ file.original_filename }}</h6>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted text-capitalize fw-medium">{{ file.file_type }}</small>
+                                            <small class="text-muted">{{ file.created_at|date:"M d" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="{% url 'file_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>View All Files
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h6 class="empty-state-title">No recent uploads</h6>
+                            <p class="empty-state-description">Start uploading files to see them here</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-12 fade-in">
+                <div class="chart-container">
+                    <h5 class="section-title">
+                        <i class="fas fa-bolt text-primary me-2"></i>
+                        Quick Actions
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'file_upload' %}?type=csv" class="btn btn-success w-100">
+                                <i class="fas fa-file-csv me-2"></i>Upload CSV
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'file_upload' %}?type=kml" class="btn btn-info w-100">
+                                <i class="fas fa-map me-2"></i>Upload KML
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'file_upload' %}?type=shapefile" class="btn btn-warning w-100">
+                                <i class="fas fa-layer-group me-2"></i>Upload Shapefile
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'file_list' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-list me-2"></i>Manage Files
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced hover effects for file type cards
+        const fileTypeCards = document.querySelectorAll('.file-type-card');
+        fileTypeCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(12px) scale(1.03)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0) scale(1)';
+            });
+        });
+        
+        // Enhanced hover effects for recent file items
+        const recentFileItems = document.querySelectorAll('.recent-file-item');
+        recentFileItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(8px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+        
+        // Add click handlers for recent file items
+        recentFileItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // You can add navigation to file detail page here
+                console.log('File item clicked');
+            });
+        });
+        
+        // Animate progress bars on page load
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 500);
+        });
+        
+        // Add staggered animation for stats cards
+        const statsCards = document.querySelectorAll('.stats-card');
+        statsCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    });
+</script>
+{% endblock %} 

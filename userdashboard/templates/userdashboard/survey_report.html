@@ -842,7 +842,7 @@
             setTimeout(() => reject(new Error('Upload timeout')), 30000);
         });
 
-        const uploadPromise = fetch('/dashboard/survey-report/api/', {
+        const uploadPromise = fetch('/user-dashboard/survey-report/api/', {
             method: 'POST',
             body: formData
         });
@@ -948,7 +948,7 @@
         }
         // Otherwise, backend will automatically load recent uploads
 
-        fetch(`/dashboard/survey-report/data/?${params}`)
+        fetch(`/user-dashboard/survey-report/data/?${params}`)
             .then(response => response.json())
             .then(data => {
                 hideLoading();
@@ -1128,7 +1128,7 @@
             file_ids: fileIds.join(',')
         });
         
-        fetch(`/dashboard/survey-report/reprocess/?${params}`)
+        fetch(`/user-dashboard/survey-report/reprocess/?${params}`)
             .then(response => response.json())
             .then(data => {
                 hideLoading();
@@ -1155,7 +1155,7 @@
             all: 'true'
         });
 
-        fetch(`/dashboard/survey-report/reprocess/?${params}`)
+        fetch(`/user-dashboard/survey-report/reprocess/?${params}`)
             .then(response => response.json())
             .then(data => {
                 hideLoading();
@@ -1574,7 +1574,7 @@
 
         // Fetch filtered data from backend
         console.log('Fetching filtered data with params:', params.toString());
-        fetch(`/dashboard/survey-report/data/?${params}`)
+        fetch(`/user-dashboard/survey-report/data/?${params}`)
             .then(response => response.json())
             .then(data => {
                 hideLoading();
@@ -2098,7 +2098,7 @@
             body: JSON.stringify(requestBody)
         };
 
-        fetch('/dashboard/survey-report/export/', requestOptions)
+        fetch(window.location.origin + '/user-dashboard/survey-report/export/?t=' + Date.now(), requestOptions)
             .then(response => {
                 console.log('Export response status:', response.status);
                 if (!response.ok) {

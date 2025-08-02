@@ -194,7 +194,7 @@ class UserActivityTrackingMiddleware:
         """Get human-readable page name"""
         page_names = {
             '/': 'Home',
-            '/dashboard/': 'Dashboard',
+            '/user-dashboard/': 'Dashboard',
             '/uploads/': 'File Uploads',
             '/profile/': 'Profile',
             '/admin-dashboard/': 'Admin Dashboard',

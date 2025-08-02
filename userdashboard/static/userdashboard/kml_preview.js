@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const kmlId = getKMLIdFromURL();
         if (!kmlId) return;
         
-        const url = new URL(`/dashboard/kml/ajax/${kmlId}/`, window.location.origin);
+        const url = new URL(`/user-dashboard/kml/ajax/${kmlId}/`, window.location.origin);
         url.searchParams.set('search', searchQuery);
         url.searchParams.set('sort', sortBy);
         url.searchParams.set('order', sortOrder);
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadGeoJSONToMap() {
         const kmlId = getKMLIdFromURL();
         if (!kmlId) return;
-        fetch(`/dashboard/kml/geojson/${kmlId}/`)
+        fetch(`/user-dashboard/kml/geojson/${kmlId}/`)
             .then(response => response.json())
             .then(geojson => {
                 if (!map) return;

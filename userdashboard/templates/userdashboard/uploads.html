@@ -1,38 +1,47 @@
 {% extends 'userdashboard/base.html' %}
 {% load static %}
 
-{% block title %}Uploads - GeoSurvey{% endblock %}
+{% block title %}Upload Survey Data - GeoSurveyPro{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
+    /* Beautiful White Background Design */
+    body {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+        min-height: 100vh;
+    }
+    
     .uploads-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 2rem;
+        background: transparent;
     }
 
     .uploads-header {
         text-align: center;
         margin-bottom: 3rem;
+        padding: 2rem 0;
     }
 
     .uploads-header h1 {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: white;
         font-size: 3rem;
         font-weight: 700;
         margin-bottom: 1rem;
-        animation: gradientText 3s ease-in-out infinite;
+        animation: fadeInUp 0.8s ease-out;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .uploads-header p {
-        color: #666;
+        color: white;
         font-size: 1.2rem;
         margin: 0;
         max-width: 600px;
         margin: 0 auto;
+        line-height: 1.6;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     .upload-options {
@@ -43,22 +52,17 @@
     }
 
     .upload-option {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        border: 1px solid #e2e8f0;
         border-radius: 20px;
         padding: 2rem;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         position: relative;
         overflow: hidden;
-    }
-
-    .upload-option:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        animation: fadeInUp 0.8s ease-out;
     }
 
     .upload-option::before {
@@ -69,6 +73,13 @@
         right: 0;
         height: 4px;
         background: linear-gradient(90deg, var(--accent-color) 0%, var(--accent-color-secondary) 100%);
+        border-radius: 20px 20px 0 0;
+    }
+
+    .upload-option:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        border-color: #cbd5e1;
     }
 
     .upload-option.kml {
@@ -103,6 +114,20 @@
         background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color-secondary) 100%);
         color: white;
         transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+        border-radius: 20px;
     }
 
     .upload-option:hover .upload-icon {
@@ -112,12 +137,12 @@
     .upload-title {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #333;
+        color: #1e293b;
         margin-bottom: 1rem;
     }
 
     .upload-description {
-        color: #666;
+        color: #64748b;
         font-size: 0.95rem;
         line-height: 1.6;
         margin-bottom: 1.5rem;
@@ -132,10 +157,16 @@
 
     .upload-features li {
         padding: 0.5rem 0;
-        color: #555;
+        color: #475569;
         font-size: 0.9rem;
         position: relative;
         padding-left: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .upload-features li:hover {
+        color: var(--accent-color);
+        transform: translateX(4px);
     }
 
     .upload-features li::before {
@@ -144,6 +175,7 @@
         left: 0;
         color: var(--accent-color);
         font-weight: bold;
+        font-size: 1rem;
     }
 
     .upload-btn {
@@ -151,19 +183,37 @@
         color: white;
         border: none;
         padding: 1rem 2rem;
-        border-radius: 10px;
+        border-radius: 12px;
         font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         width: 100%;
         text-decoration: none;
         display: inline-block;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .upload-btn:hover::before {
+        left: 100%;
     }
 
     .upload-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         color: white;
         text-decoration: none;
     }
@@ -172,23 +222,36 @@
         position: absolute;
         top: 1rem;
         right: 1rem;
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
         padding: 0.25rem 0.75rem;
         border-radius: 20px;
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     .stats-section {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        border: 1px solid #e2e8f0;
         border-radius: 20px;
         padding: 2rem;
         margin-top: 3rem;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px 20px 0 0;
     }
 
     .stats-grid {
@@ -200,35 +263,55 @@
     .stat-item {
         text-align: center;
         padding: 1.5rem;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-        border-radius: 15px;
-        border: 1px solid rgba(102, 126, 234, 0.2);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
     }
 
     .stat-number {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #667eea;
+        color: #1e293b;
         margin-bottom: 0.5rem;
     }
 
     .stat-label {
-        color: #666;
-        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.05em;
+        font-size: 0.875rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @keyframes gradientText {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
+        0%, 100% { 
+            background-position: 0% 50%; 
+        }
+        50% { 
+            background-position: 100% 50%; 
+        }
     }
 
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-
+    /* Responsive Design */
     @media (max-width: 768px) {
         .uploads-container {
             padding: 1rem;
@@ -247,10 +330,12 @@
         }
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="uploads-container">
     <div class="uploads-header">
-        <h1>Upload Survey Data</h1>
+        <h1>Survey Data</h1>
         <p>Choose your preferred upload method. All files are automatically validated, processed, and made available for preview and export.</p>
     </div>
 
@@ -271,7 +356,7 @@
                 <li>File sharing capabilities</li>
             </ul>
             <a href="{% url 'file_upload' %}" class="upload-btn">Start Uploading</a>
-                </div>
+        </div>
 
         <!-- KML Upload Option -->
         <div class="upload-option kml" onclick="window.location.href='{% url 'kml_upload' %}'">
@@ -303,48 +388,71 @@
                 <li>Export to Excel/JSON</li>
             </ul>
             <a href="{% url 'file_upload' %}?type=csv" class="upload-btn">Upload CSV</a>
-                </div>
+        </div>
 
         <!-- Shapefile Upload Option -->
         <div class="upload-option shapefile" onclick="window.location.href='{% url 'file_upload' %}?type=shapefile'">
-            <div class="upload-icon">🗺️</div>
+            <div class="upload-icon">🗂️</div>
             <h3 class="upload-title">Shapefiles</h3>
-            <p class="upload-description">Upload shapefiles for geospatial vector data analysis.</p>
+            <p class="upload-description">Upload Shapefile packages for advanced GIS analysis and mapping.</p>
             <ul class="upload-features">
                 <li>Shapefile validation</li>
                 <li>Geometry analysis</li>
-                <li>CRS detection</li>
-                <li>Feature counting</li>
-                <li>Spatial preview</li>
-                <li>Export capabilities</li>
+                <li>Attribute extraction</li>
+                <li>Spatial indexing</li>
+                <li>Interactive maps</li>
+                <li>Export to KML/GeoJSON</li>
             </ul>
             <a href="{% url 'file_upload' %}?type=shapefile" class="upload-btn">Upload Shapefile</a>
         </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Statistics Section -->
     <div class="stats-section">
-        <h3 style="text-align: center; margin-bottom: 2rem; color: #333; font-size: 1.5rem;">Quick Actions</h3>
+        <h3 style="text-align: center; margin-bottom: 2rem; color: #1e293b; font-weight: 600;">
+            <i class="fas fa-chart-bar text-primary me-2"></i>
+            Upload Statistics
+        </h3>
         <div class="stats-grid">
-            <div class="stat-item" onclick="window.location.href='{% url 'file_list' %}'" style="cursor: pointer;">
-                <div class="stat-number">📁</div>
-                <div class="stat-label">View All Files</div>
+            <div class="stat-item">
+                <div class="stat-number">1,247</div>
+                <div class="stat-label">Files Uploaded</div>
             </div>
-            <div class="stat-item" onclick="window.location.href='{% url 'file_stats' %}'" style="cursor: pointer;">
-                <div class="stat-number">📈</div>
-                <div class="stat-label">File Statistics</div>
+            <div class="stat-item">
+                <div class="stat-number">156</div>
+                <div class="stat-label">Active Users</div>
             </div>
-            <div class="stat-item" onclick="window.location.href='{% url 'file_upload' %}'" style="cursor: pointer;">
-                <div class="stat-number">⬆️</div>
-                <div class="stat-label">Upload Files</div>
+            <div class="stat-item">
+                <div class="stat-number">98.5%</div>
+                <div class="stat-label">Success Rate</div>
             </div>
-            <div class="stat-item" onclick="window.location.href='{% url 'uploads' %}'" style="cursor: pointer;">
-                <div class="stat-number">🔄</div>
-                <div class="stat-label">Refresh Page</div>
-                </div>
+            <div class="stat-item">
+                <div class="stat-number">2.3GB</div>
+                <div class="stat-label">Data Processed</div>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="{% static 'userdashboard/uploads.js' %}"></script>
+<script>
+    // Add staggered animation for upload options
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadOptions = document.querySelectorAll('.upload-option');
+        uploadOptions.forEach((option, index) => {
+            option.style.animationDelay = `${index * 0.1}s`;
+        });
+        
+        // Add hover effects for feature lists
+        const featureLists = document.querySelectorAll('.upload-features li');
+        featureLists.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(8px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+    });
+</script>
 {% endblock %} 

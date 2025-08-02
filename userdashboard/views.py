@@ -426,7 +426,7 @@ class FilePreviewView(LoginRequiredMixin, View):
                 # Clear preview data from session
                 del request.session['preview_data']
                 
-                return redirect('my_survey')
+                return redirect('authenticated_dashboard')
                 
             except Exception as e:
                 messages.error(request, f'Error processing file: {str(e)}')
@@ -1455,7 +1455,9 @@ class SurveyExportView(LoginRequiredMixin, View):
         print(f"=== SURVEY EXPORT VIEW DISPATCH ===")
         print(f"Request method: {request.method}")
         print(f"Request path: {request.path}")
+        print(f"Request URL: {request.build_absolute_uri()}")
         print(f"User authenticated: {request.user.is_authenticated}")
+        print(f"User: {request.user}")
         return super().dispatch(request, *args, **kwargs)
     
     def get(self, request):
@@ -2394,89 +2396,7 @@ class SurveyExportView(LoginRequiredMixin, View):
                 'error': str(e)
             }, status=500)
 
-class MySurveyView(LoginRequiredMixin, View):
-    def get(self, request):
-        try:
-            # Get user's KML surveys
-            kml_surveys = KMLData.objects.filter(kml_file__user=request.user).order_by('-created_at')
-            
-            # Get user's file uploads that are surveys
-            file_surveys = FileUpload.objects.filter(
-                user=request.user,
-                file_type__in=['kml', 'csv', 'shapefile']
-            ).order_by('-created_at')
-            
-            # Get user's parcels
-            parcels = UploadedParcel.objects.filter(user=request.user).order_by('-uploaded_at')
-            
-            # Count statistics
-            total_surveys = kml_surveys.count() + file_surveys.count()
-            total_parcels = parcels.count()
-            
-            # Get recent survey activities
-            recent_surveys = []
-            
-            # Add KML surveys
-            for kml in kml_surveys[:5]:
-                # Try to extract coordinates from the coordinates field
-                coordinates_info = "No coordinates"
-                try:
-                    if kml.coordinates:
-                        import json
-                        coords = json.loads(kml.coordinates)
-                        if isinstance(coords, list) and len(coords) > 0:
-                            if isinstance(coords[0], list):  # Polygon or LineString
-                                first_point = coords[0][0] if coords[0] else coords[0]
-                            else:  # Point
-                                first_point = coords
-                            if first_point and len(first_point) >= 2:
-                                coordinates_info = f"Coordinates: {first_point[1]:.6f}, {first_point[0]:.6f}"
-                except:
-                    pass
-                
-                recent_surveys.append({
-                    'type': 'kml',
-                    'name': kml.placemark_name or kml.kitta_number or f"KML Survey {kml.id}",
-                    'date': kml.created_at,
-                    'status': 'Completed',
-                    'details': coordinates_info
-                })
-            
-            # Add file surveys
-            for file in file_surveys[:5]:
-                recent_surveys.append({
-                    'type': file.file_type,
-                    'name': file.original_filename,
-                    'date': file.created_at,
-                    'status': 'Uploaded',
-                    'details': f"File size: {file.file.size} bytes" if file.file else "No file"
-                })
-            
-            # Sort by date
-            recent_surveys.sort(key=lambda x: x['date'], reverse=True)
-            
-            context = {
-                'kml_surveys': kml_surveys[:10],  # Show last 10
-                'file_surveys': file_surveys[:10],  # Show last 10
-                'parcels': parcels[:10],  # Show last 10
-                'total_surveys': total_surveys,
-                'total_parcels': total_parcels,
-                'recent_surveys': recent_surveys[:10],
-            }
-            
-            return render(request, 'userdashboard/my_survey.html', context)
-            
-        except Exception as e:
-            print(f"MySurvey error: {e}")
-            context = {
-                'kml_surveys': [],
-                'file_surveys': [],
-                'parcels': [],
-                'total_surveys': 0,
-                'total_parcels': 0,
-                'recent_surveys': [],
-            }
-            return render(request, 'userdashboard/my_survey.html', context)
+
 
 
 

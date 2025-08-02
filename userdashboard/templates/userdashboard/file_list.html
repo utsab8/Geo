@@ -465,7 +465,7 @@
 <script>
 function deleteFile(fileId, fileName) {
     if (confirm(`Are you sure you want to delete "${fileName}"? This action cannot be undone.`)) {
-        fetch(`/dashboard/files/${fileId}/delete/`, {
+        fetch(`/user-dashboard/files/${fileId}/delete/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),

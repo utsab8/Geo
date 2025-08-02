@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    UserDashboardView, PublicDashboardView, UploadsView, MySurveyView, HistoryView, HelpView, ProfileView,
+    UserDashboardView, PublicDashboardView, UploadsView, HistoryView, HelpView, ProfileView,
     SurveyReportView, SurveyReportAPIView, SurveyExportView, HistoryAPIView, ProfileAPIView,
     test_css_view, css_test_view, create_sample_history_data, test_logout_view
 )
@@ -44,7 +44,7 @@ urlpatterns = [
     # Shared file access
     path('shared/<uuid:share_token>/', SharedFileView.as_view(), name='shared_file'),
 
-    path('my-survey/', MySurveyView.as_view(), name='my_survey'),
+
     path('survey-report/', SurveyReportView.as_view(), name='survey_report'),
     path('survey-report/api/', SurveyReportAPIView.as_view(), name='survey_report_api'),
     path('survey-report/data/', SurveyReportAPIView.as_view(), name='survey_report_data'),

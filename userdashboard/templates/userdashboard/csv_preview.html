@@ -529,7 +529,7 @@ function loadCSVDataToMap() {
     const fileId = '{{ file_upload.id }}';
     
     // Fetch CSV data for map
-    fetch(`/dashboard/csv/geojson/${fileId}/`)
+    fetch(`/user-dashboard/csv/geojson/${fileId}/`)
         .then(response => response.json())
         .then(geojson => {
             if (!map) return;
